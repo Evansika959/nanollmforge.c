@@ -1,0 +1,34 @@
+# Compiled inference binaries (build outputs)
+/run
+/runq
+/run_gelu
+/runq_gelu
+/run_periln
+/runq_periln
+/runq_android
+/runq_android_static
+/runq_android_x86_64
+/bpe_test
+/testc
+*.exe
+
+# Exported model weights (large, regenerable via reallmforge/export_reallmforge.py).
+# NOTE: does NOT match the upstream tracked tokenizer.bin / tokenizer.model.
+*_v0.bin
+*_v2.bin
+
+# Exported GPT-2 tokenizer table (regenerable via reallmforge/export_gpt2_tokenizer.py)
+/tokenizer_gpt2.bin
+
+# Bundled model weights: too large for a public fork (GitHub blocks >100MB, and this fork
+# disallows Git LFS). Distributed via GitHub Releases instead — see reallmforge/fetch_model.sh.
+models/**/*.q8.bin
+
+# Python
+__pycache__/
+*.pyc
+
+# Scratch / reference dumps
+/ref_out.txt
+/c_out.txt
+/*_ids.txt
