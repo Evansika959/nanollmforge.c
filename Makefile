@@ -23,6 +23,28 @@ runperiln: run.c
 	$(CC) -O3 -DACT_GELU -DPERI_LN -o run_periln  run.c  -lm
 	$(CC) -O3 -DACT_GELU -DPERI_LN -o runq_periln runq.c -lm
 
+# Heterogeneous / infinite-head-attention build: runs NSGA-searched ReaLLM-Forge models with
+# per-layer dims, infinite attention (concat path), identity layers, GQA, peri-LN, GeGLU + erf
+# GELU, RoPE. Reads the .rlm format (reallmforge/export_reallm_hetero.py). fp32 only.
+# See doc/reallmforge_hetero_infinite.md. Produces run_reallm (single-threaded; the OpenMP
+# pragmas are ignored without -fopenmp, so this builds everywhere incl. stock macOS clang).
+.PHONY: runreallm
+runreallm: run_reallm.c bpe.h
+	$(CC) -O3 -o run_reallm run_reallm.c -lm
+
+# Q8_0 (int8 group-quantized) variant of run_reallm — ~4x smaller, for on-device/Android.
+# Reads version-2 .rlm (export_reallm_hetero.py --version 2). Produces runq_reallm.
+.PHONY: runqreallm
+runqreallm: runq_reallm.c bpe.h
+	$(CC) -O3 -o runq_reallm runq_reallm.c -lm
+
+# Multithreaded (OpenMP) builds of the .rlm runners. Big speedup on the classifier/MLP matmuls;
+# needs libomp on macOS (brew install libomp). Run with e.g. OMP_NUM_THREADS=4 ./run_reallm ...
+.PHONY: runreallmomp
+runreallmomp: run_reallm.c bpe.h
+	$(CC) -Ofast -fopenmp -march=native -o run_reallm  run_reallm.c  -lm
+	$(CC) -Ofast -fopenmp -march=native -o runq_reallm runq_reallm.c -lm
+
 # Android NDK cross-compile (aarch64) of the quantized GELU engine for on-device runs.
 # Requires the Android NDK. Set ANDROID_NDK to your install, e.g.:
 #   make runq_android ANDROID_NDK=$HOME/android-ndk-r27c
@@ -110,4 +132,5 @@ testcc:
 .PHONY: clean
 clean:
 	rm -f run runq run_gelu runq_gelu run_periln runq_periln
+	rm -f run_reallm runq_reallm
 	rm -f runq_android runq_android_x86_64 bpe_test testc

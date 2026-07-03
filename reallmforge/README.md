@@ -6,7 +6,12 @@ results: [`../doc/reallmforge_to_llama2c.md`](../doc/reallmforge_to_llama2c.md).
 
 ## Files
 - `export_reallmforge.py` — ReaLLM-Forge `ckpt.pt` → llama2.c `.bin` (`--version 0` fp32 for run.c,
-  `--version 2` Q8_0 for runq.c). Validates the supported "Tier-1" architecture subset.
+  `--version 2` Q8_0 for runq.c). Validates the supported "Tier-1" architecture subset (uniform dims).
+- `export_reallm_hetero.py` — ReaLLM-Forge `ckpt.pt` → `.rlm` (per-layer format) for **NSGA models with
+  infinite-head attention**: heterogeneous per-layer dims, `infinite`/`identity` attention, GQA, peri-LN.
+  `--version 1` fp32 (`make runreallm` → `./run_reallm model.rlm ...`, token-exact vs PyTorch);
+  `--version 2` Q8_0 int8, ~4× smaller (`make runqreallm` → `./runq_reallm model.q8.rlm ...`).
+  Design + parity results: [`../doc/reallmforge_hetero_infinite.md`](../doc/reallmforge_hetero_infinite.md).
 - `export_gpt2_tokenizer.py` — tiktoken "gpt2" ranks → `tokenizer_gpt2.bin` for the C BPE tokenizer.
 - `ref_dump.py` — PyTorch fp32 CPU greedy reference, for numeric-parity validation.
 - `run_live.sh` — live inference on the bundled model; interactive REPL or one-shot. Streams tokens.

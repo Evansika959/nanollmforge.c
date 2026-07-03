@@ -5,6 +5,8 @@
 /runq_gelu
 /run_periln
 /runq_periln
+/run_reallm
+/runq_reallm
 /runq_android
 /runq_android_static
 /runq_android_x86_64
@@ -16,6 +18,9 @@
 # NOTE: does NOT match the upstream tracked tokenizer.bin / tokenizer.model.
 *_v0.bin
 *_v2.bin
+
+# Heterogeneous / infinite-attention exports (regenerable via export_reallm_hetero.py)
+*.rlm
 
 # Exported GPT-2 tokenizer table (regenerable via reallmforge/export_gpt2_tokenizer.py)
 /tokenizer_gpt2.bin
