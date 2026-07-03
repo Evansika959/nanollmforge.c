@@ -19,8 +19,10 @@
 *_v0.bin
 *_v2.bin
 
-# Heterogeneous / infinite-attention exports (regenerable via export_reallm_hetero.py)
+# Heterogeneous / infinite-attention exports (regenerable via export_reallm_hetero.py).
+# Scratch exports anywhere are ignored, EXCEPT bundled example models under models/ (LFS-tracked).
 *.rlm
+!models/**/*.rlm
 
 # Exported GPT-2 tokenizer table (regenerable via reallmforge/export_gpt2_tokenizer.py)
 /tokenizer_gpt2.bin

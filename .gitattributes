@@ -1,1 +1,2 @@
 models/**/*.q8.bin filter=lfs diff=lfs merge=lfs -text
+models/**/*.rlm filter=lfs diff=lfs merge=lfs -text
