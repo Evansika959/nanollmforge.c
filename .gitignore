@@ -29,7 +29,7 @@
 
 # Bundled model weights: too large for a public fork (GitHub blocks >100MB, and this fork
 # disallows Git LFS). Distributed via GitHub Releases instead — see reallmforge/fetch_model.sh.
-models/**/*.q8.bin
+# models/**/*.q8.bin
 
 # Python
 __pycache__/
