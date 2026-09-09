@@ -135,18 +135,34 @@ def ensure_compiled_and_pushed(adb_base):
         print(f"Error: NDK compiler not found for {arch}. Please set NDK or ANDROID_NDK_HOME environment variable.")
         sys.exit(1)
 
-    print(f"Compiling runq_reallm for {arch} using {os.path.basename(compiler)} (OpenMP 4-core Batched GEMM + Cortex-A53 tuned)...")
-    cmd = [compiler, "-O3", "-march=armv8-a", "-mcpu=cortex-a53", "-mfpu=neon-fp-armv8", "-ffast-math", "-fopenmp", "-static-openmp", "-Isrc", "-o", "runq_reallm_device", "src/runq_reallm.c", "-lm"]
+    is_arm32 = "armv7" in arch or "armv8l" in arch or "32" in arch
+    arch_flags = ["-march=armv7-a", "-mfpu=neon"] if is_arm32 else ["-march=armv8-a"]
+    print(f"Compiling runq_reallm for {arch} using {os.path.basename(compiler)} (OpenMP 4-core Batched GEMM)...")
+    cmd = [
+        compiler,
+        "-O3",
+        *arch_flags,
+        "-ffast-math",
+        "-fopenmp",
+        "-static-openmp",
+        "-Isrc",
+        "-o",
+        "runq_reallm_device",
+        "src/runq_reallm.c",
+        "-lm",
+    ]
     subprocess.run(cmd, check=True)
     
-    if os.path.exists("src/power_sampler.c"):
-        print("Compiling power_sampler for device...")
-        cmd_ps = [compiler, "-O3", "-o", "power_sampler_device", "src/power_sampler.c"]
-        subprocess.run(cmd_ps, check=True)
-        adb_push_with_retry(adb_base, "power_sampler_device", "/data/local/tmp/power_sampler")
-        subprocess.run(adb_base + ["shell", "chmod +x /data/local/tmp/power_sampler"], capture_output=True, check=True)
-        if os.path.exists("power_sampler_device"):
-            os.remove("power_sampler_device")
+    power_sampler_source = "src/power_sampler.c"
+    if not os.path.exists(power_sampler_source):
+        raise FileNotFoundError(f"Required device sampler is missing: {power_sampler_source}")
+    print("Compiling power_sampler for device...")
+    cmd_ps = [compiler, "-O3", "-o", "power_sampler_device", power_sampler_source]
+    subprocess.run(cmd_ps, check=True)
+    adb_push_with_retry(adb_base, "power_sampler_device", "/data/local/tmp/power_sampler")
+    subprocess.run(adb_base + ["shell", "chmod +x /data/local/tmp/power_sampler"], capture_output=True, check=True)
+    if os.path.exists("power_sampler_device"):
+        os.remove("power_sampler_device")
 
     print("Pushing runq_reallm engine and tokenizer to device...")
     adb_push_with_retry(adb_base, "runq_reallm_device", "/data/local/tmp/runq_reallm")
@@ -208,7 +224,7 @@ def generate_mock_ckpt(n_head, n_kv, qk, vd, mlp_hidden, n_layer, n_embd):
 
 def export_model():
     export_script = os.path.join(REPO_ROOT, "reallmforge", "export_reallm_hetero.py")
-    cmd = ["python3", export_script, LOCAL_CKPT, LOCAL_RLM, "--version", "2"]
+    cmd = [sys.executable, export_script, LOCAL_CKPT, LOCAL_RLM, "--version", "2"]
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
 def build_prompt_for_tokens(target_prefill_tokens):
@@ -233,7 +249,7 @@ def build_prompt_for_tokens(target_prefill_tokens):
 
 
 
-def run_benchmark_with_power(adb_base, prefill_tokens=128, decode_steps=64, sample_rate=10.0, pre_idle_sec=4.0, post_idle_sec=4.0):
+def run_benchmark_with_power(adb_base, prefill_tokens=128, decode_steps=64, sample_rate=10.0, pre_idle_sec=4.0, post_idle_sec=4.0, min_battery_percent=30):
     adb_push_with_retry(adb_base, LOCAL_RLM, f"/data/local/tmp/{LOCAL_RLM}")
     
     prompt_str = build_prompt_for_tokens(prefill_tokens)
@@ -270,7 +286,41 @@ SAMPLER_PID=$!
 
 sleep {pre_idle_sec}
 
-./runq_reallm {LOCAL_RLM} -g tokenizer_gpt2.bin -i '{prompt_str}' -t 0.8 -p 0.9 -n {total_steps} > "$LOG" 2>&1 || true
+./runq_reallm {LOCAL_RLM} -g tokenizer_gpt2.bin -i '{prompt_str}' -t 0.8 -p 0.9 -n {total_steps} > "$LOG" 2>&1 &
+INFER_PID=$!
+# Poll during inference as well as between configurations.
+BATTERY_STOP="/data/local/tmp/sweep_battery_stop"
+rm -f "$BATTERY_STOP"
+(
+    while kill -0 "$INFER_PID" 2>/dev/null; do
+        LEVEL=$(cat /sys/class/power_supply/battery/capacity 2>/dev/null || dumpsys battery | awk '/level:/ {{level=$2}} /scale:/ {{scale=$2}} END {{if (scale > 0) print int(100*level/scale)}}')
+        case "$LEVEL" in
+            ''|*[!0-9]*) echo "Battery telemetry unavailable" > "$BATTERY_STOP" ;;
+            *) if [ "$LEVEL" -le {min_battery_percent} ]; then echo "Battery at $LEVEL%. Please charge the watch." > "$BATTERY_STOP"; fi ;;
+        esac
+        if [ -f "$BATTERY_STOP" ]; then
+            kill "$INFER_PID" 2>/dev/null || true
+            break
+        fi
+        sleep 1
+    done
+) &
+GUARD_PID=$!
+STATUS=0
+wait "$INFER_PID" || STATUS=$?
+kill "$GUARD_PID" 2>/dev/null || true
+wait "$GUARD_PID" 2>/dev/null || true
+if [ -f "$BATTERY_STOP" ]; then
+    cat "$BATTERY_STOP"
+    kill -15 "$SAMPLER_PID" 2>/dev/null || true
+    wait "$SAMPLER_PID" 2>/dev/null || true
+    exit 75
+fi
+if [ "$STATUS" -ne 0 ]; then
+    kill -15 "$SAMPLER_PID" 2>/dev/null || true
+    wait "$SAMPLER_PID" 2>/dev/null || true
+    exit "$STATUS"
+fi
 
 sleep {post_idle_sec}
 
@@ -283,7 +333,10 @@ echo "DONE"
                                  stdin=subprocess.PIPE, text=True)
     push_proc.communicate(input=remote_script)
 
-    subprocess.run(adb_base + ["shell", "sh /data/local/tmp/run_trace.sh"], check=True)
+    result = subprocess.run(adb_base + ["shell", "sh /data/local/tmp/run_trace.sh"])
+    if result.returncode == 75:
+        raise SystemExit("Sweep stopped by battery guard. Charge the watch, unplug it, let it cool, and rerun. The interrupted configuration will be retried.")
+    result.check_returncode()
 
     subprocess.run(adb_base + ["pull", "/data/local/tmp/trace_raw.csv", "temp_trace_raw.csv"], capture_output=True, check=True)
     subprocess.run(adb_base + ["pull", "/data/local/tmp/infer_output.log", "temp_infer_log.txt"], capture_output=True, check=True)
@@ -386,6 +439,7 @@ def get_device_telemetry(adb_base):
     cmd = """
     cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null || echo 0;
     cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null || echo 0;
+    cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq 2>/dev/null || cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null || echo 0;
     cat /sys/class/thermal/thermal_zone17/temp 2>/dev/null || echo 0;
     cat /sys/class/thermal/thermal_zone6/temp 2>/dev/null || echo 0;
     cat /sys/class/thermal/cooling_device1/cur_state 2>/dev/null || cat /sys/class/thermal/cooling_device0/cur_state 2>/dev/null || echo 0;
@@ -395,18 +449,20 @@ def get_device_telemetry(adb_base):
     try:
         res = subprocess.run(adb_base + ["shell", cmd], capture_output=True, text=True, timeout=10)
         lines = [l.strip() for l in res.stdout.strip().splitlines() if l.strip()]
-        if len(lines) >= 7:
+        if len(lines) >= 8:
             freq_khz = int(lines[0]) if lines[0].isdigit() else 0
-            max_freq_khz = int(lines[1]) if lines[1].isdigit() else 1900800
-            cpu_temp = float(lines[2]) / 1000.0 if lines[2].isdigit() else 0.0
-            skin_temp = float(lines[3]) / 1000.0 if lines[3].isdigit() else 0.0
-            cdev = int(lines[4]) if lines[4].isdigit() else 0
-            volt = float(lines[5]) / 1e6 if lines[5].isdigit() else 0.0
-            curr = float(lines[6]) / 1000.0 if (lines[6].isdigit() or lines[6].startswith("-")) else 0.0
+            max_freq_khz = int(lines[1]) if lines[1].isdigit() else 0
+            nominal_max_freq_khz = int(lines[2]) if lines[2].isdigit() else max_freq_khz
+            cpu_temp = float(lines[3]) / 1000.0 if lines[3].isdigit() else 0.0
+            skin_temp = float(lines[4]) / 1000.0 if lines[4].isdigit() else 0.0
+            cdev = int(lines[5]) if lines[5].isdigit() else 0
+            volt = float(lines[6]) / 1e6 if lines[6].isdigit() else 0.0
+            curr = float(lines[7]) / 1000.0 if (lines[7].isdigit() or lines[7].startswith("-")) else 0.0
             return {
                 "freq_khz": freq_khz,
                 "freq_mhz": freq_khz / 1000.0,
                 "max_freq_mhz": max_freq_khz / 1000.0,
+                "nominal_max_freq_mhz": nominal_max_freq_khz / 1000.0,
                 "cpu_temp_c": cpu_temp,
                 "skin_temp_c": skin_temp,
                 "cooling_state": cdev,
@@ -417,31 +473,64 @@ def get_device_telemetry(adb_base):
         pass
     return None
 
-def wait_for_thermal_and_voltage_recovery(adb_base, target_cpu_temp=44.0, max_wait_sec=180.0, poll_interval=2.0, min_voltage_v=3.5):
+def check_battery_or_stop(adb_base, min_battery_percent=30):
+    """Fail closed if charge cannot be read; exit without marking a config complete."""
+    try:
+        result = subprocess.run(
+            adb_base + ["shell", "cat /sys/class/power_supply/battery/capacity 2>/dev/null || dumpsys battery"],
+            capture_output=True, text=True, timeout=10, check=True,
+        )
+        raw = result.stdout.strip()
+        if raw.isdigit():
+            level = float(raw)
+        else:
+            fields = dict(line.strip().split(':', 1) for line in raw.splitlines() if ':' in line)
+            level = 100.0 * float(fields['level']) / float(fields['scale'])
+        if not 0 <= level <= 100:
+            raise ValueError("invalid battery percentage")
+    except (subprocess.SubprocessError, ValueError, KeyError, ZeroDivisionError) as exc:
+        raise SystemExit(f"Sweep stopped: cannot read battery charge ({exc}). Check the watch connection and rerun.")
+    if level <= min_battery_percent:
+        raise SystemExit(
+            f"Sweep stopped: battery is {level:.0f}% (cutoff {min_battery_percent}%). "
+            "Please charge the watch, unplug it, let it cool, and rerun the same command. "
+            "Completed results are saved and will be skipped on resume."
+        )
+    return level
+
+
+def wait_for_thermal_and_voltage_recovery(adb_base, target_cpu_temp=40.0, max_wait_sec=180.0, poll_interval=2.0, min_voltage_v=3.5, min_battery_percent=30):
     """
     Monitors device thermal, CPU frequency, and battery voltage.
-    Prioritizes MAX CPU Frequency (1.90 GHz) and Cooling Device Level 0.
-    As long as frequency is unclamped (1.90 GHz) and cooling state is 0,
+    Prioritizes the device-reported maximum CPU frequency and Cooling Device Level 0.
+    As long as the frequency policy is unclamped and cooling state is 0,
     inference runs immediately without unnecessary thermal wait.
     """
     t0 = time.time()
     was_throttled = False
 
     while True:
+        check_battery_or_stop(adb_base, min_battery_percent)
         telem = get_device_telemetry(adb_base)
-        if not telem:
+        if not telem or telem['cpu_temp_c'] <= 0:
             time.sleep(poll_interval)
             if time.time() - t0 > max_wait_sec:
-                break
+                raise SystemExit("Sweep stopped: valid temperature telemetry unavailable. Check the watch and rerun.")
             continue
 
         cdev = telem["cooling_state"]
-        freq_mhz = telem["freq_mhz"]
+        max_freq_mhz = telem["max_freq_mhz"]
+        nominal_max_freq_mhz = telem["nominal_max_freq_mhz"]
         cpu_temp = telem["cpu_temp_c"]
         volt = telem["voltage_v"]
 
-        # Primary condition: CPU must be running at nominal max clock (1.90 GHz) with zero thermal mitigation
-        is_freq_clamped = freq_mhz < 1850.0
+        # Compare the policy ceiling with the hardware-reported ceiling. The
+        # instantaneous clock is normally low while idle and is not evidence
+        # of thermal throttling.
+        is_freq_clamped = (
+            nominal_max_freq_mhz > 0.0
+            and max_freq_mhz < nominal_max_freq_mhz * 0.975
+        )
         is_cdev_active = cdev > 0
         # Secondary safety ceiling (only if target_cpu_temp > 0)
         is_hot = (target_cpu_temp > 0.0) and (cpu_temp > target_cpu_temp)
@@ -453,17 +542,16 @@ def wait_for_thermal_and_voltage_recovery(adb_base, target_cpu_temp=44.0, max_wa
             if was_throttled:
                 time.sleep(1.0)
                 telem_post = get_device_telemetry(adb_base) or telem
-                print(f"\n  [Frequency Guard] ✅ Max frequency restored (1.90 GHz, CoolState: 0, CPU: {telem_post['cpu_temp_c']:.1f}°C, Volt: {telem_post['voltage_v']:.2f}V). Resuming sweep.")
+                print(f"\n  [Frequency Guard] ✅ Max frequency restored ({telem_post['max_freq_mhz']:.0f}MHz, CoolState: 0, CPU: {telem_post['cpu_temp_c']:.1f}°C, Volt: {telem_post['voltage_v']:.2f}V). Resuming sweep.")
             return telem
 
         was_throttled = True
         elapsed = time.time() - t0
         if elapsed > max_wait_sec:
-            print(f"\n  [Frequency Guard] ⚠️ Wait timeout ({max_wait_sec}s). Resuming: CPU={cpu_temp:.1f}°C, Freq={freq_mhz:.0f}MHz, CoolState={cdev}, Volt={volt:.2f}V.")
-            return telem
+            raise SystemExit(f"Sweep stopped: recovery timed out after {max_wait_sec}s at {cpu_temp:.1f}°C. Let the watch cool and rerun; completed results are saved.")
 
         reasons = []
-        if is_freq_clamped: reasons.append(f"Freq={freq_mhz:.0f}MHz (clamped < 1900MHz)")
+        if is_freq_clamped: reasons.append(f"MaxFreq={max_freq_mhz:.0f}MHz < Nominal={nominal_max_freq_mhz:.0f}MHz")
         if is_cdev_active: reasons.append(f"CoolState={cdev}")
         if is_hot: reasons.append(f"CPU={cpu_temp:.1f}°C > {target_cpu_temp:.1f}°C")
         if is_volt_sagging: reasons.append(f"Volt={volt:.2f}V < {min_voltage_v}V")
@@ -543,14 +631,19 @@ def main():
     parser.add_argument("--serial", type=str, default=os.environ.get("ANDROID_SERIAL", ""), help="Device serial or IP:port")
     parser.add_argument("--adb", type=str, default=find_adb(), help="Path to adb binary")
     parser.add_argument("--prefill-tokens", type=int, default=48, help="Target prefill prompt tokens (default: 48)")
-    parser.add_argument("--steps", type=int, default=16, help="Decoding steps per config (default: 16)")
+    parser.add_argument("--steps", type=int, default=32, help="Decoding steps per config (default: 32)")
+    parser.add_argument("--min-battery-percent", type=int, default=30, help="Stop and request charging at or below this battery percentage (default: 30)")
     parser.add_argument("--sample-rate", type=float, default=10.0, help="Power sampling frequency in Hz (default: 10.0)")
     parser.add_argument("--inter-run-idle-sec", "--idle-between-runs", type=float, default=0.0, help="Optional idle battery sampling duration in seconds between config runs (default: 0.0, disabled)")
-    parser.add_argument("--cool-down-temp", type=float, default=44.0, help="Target safety CPU temperature ceiling (°C). Set 0 to disable temp ceiling and rely purely on max clock (default: 44.0)")
+    parser.add_argument("--cool-down-temp", type=float, default=40.0, help="CPU temperature ceiling before inference (°C; default: 40.0)")
     parser.add_argument("--min-cooldown-sec", type=float, default=2.0, help="Minimum pause between runs for voltage/thermal settling (default: 2.0s)")
     parser.add_argument("--max-cool-wait", type=float, default=180.0, help="Max seconds to wait for thermal/voltage recovery (default: 180.0)")
     parser.add_argument("--no-cooldown", action="store_true", help="Disable automatic thermal cooldown and voltage recovery wait")
     args = parser.parse_args()
+    if args.steps <= 0:
+        parser.error("--steps must be positive")
+    if not 0 <= args.min_battery_percent <= 100:
+        parser.error("--min-battery-percent must be between 0 and 100")
 
     if not os.path.exists(args.config):
         print(f"Error: Config file {args.config} not found.")
@@ -603,6 +696,8 @@ def main():
         print(f"Inter-Idle   : {args.inter_run_idle_sec:.1f}s sampling between runs")
     print("==========================================================")
 
+    print(f"Battery Guard: stop at <= {args.min_battery_percent}% and request charging")
+    check_battery_or_stop(adb_base, args.min_battery_percent)
     arch = ensure_compiled_and_pushed(adb_base)
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
@@ -655,11 +750,13 @@ def main():
             continue
 
         # 1. Thermal, Frequency & Voltage Recovery Guard
+        check_battery_or_stop(adb_base, args.min_battery_percent)
         if not args.no_cooldown:
             telem_start = wait_for_thermal_and_voltage_recovery(
                 adb_base,
                 target_cpu_temp=args.cool_down_temp,
-                max_wait_sec=args.max_cool_wait
+                max_wait_sec=args.max_cool_wait,
+                min_battery_percent=args.min_battery_percent,
             )
         else:
             telem_start = get_device_telemetry(adb_base)
@@ -680,11 +777,21 @@ def main():
             generate_mock_ckpt(n_h, n_kv, d_qk, d_v, d_mlp, n_layer, d_model)
             export_model()
 
+            # Recheck after export and transfer preparation, just before inference.
+            check_battery_or_stop(adb_base, args.min_battery_percent)
+            if not args.no_cooldown:
+                telem_start = wait_for_thermal_and_voltage_recovery(
+                    adb_base, target_cpu_temp=args.cool_down_temp,
+                    max_wait_sec=args.max_cool_wait,
+                    min_battery_percent=args.min_battery_percent,
+                )
+                temp_start_c = telem_start['cpu_temp_c']
             metrics = run_benchmark_with_power(
                 adb_base,
                 prefill_tokens=args.prefill_tokens,
                 decode_steps=args.steps,
-                sample_rate=args.sample_rate
+                sample_rate=args.sample_rate,
+                min_battery_percent=args.min_battery_percent,
             )
 
             # Sample ending telemetry
@@ -717,6 +824,7 @@ def main():
                     ])
 
             print(f"  -> decode tok/s: {metrics['tok_s']:.2f} | TTFT: {metrics['ttft_ms']:.1f}ms | TPOT: {metrics['tpot_ms']:.2f}ms/tok | active power: {metrics['active_power_w']*1000:.1f}mW | CPU Temp: {temp_start_c:.1f}°C -> {temp_end_c:.1f}°C (CoolState: {cooling_state_end})")
+            check_battery_or_stop(adb_base, args.min_battery_percent)
 
         except Exception as e:
             print(f"  -> Error profiling config {config_id}: {e}")
@@ -732,4 +840,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
