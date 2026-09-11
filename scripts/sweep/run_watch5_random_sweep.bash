@@ -15,8 +15,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
 CONDA_ENV_NAME="${CONDA_ENV_NAME:-nanollmforge}"
-SWEEP_CONFIG="${SWEEP_CONFIG:-$SCRIPT_DIR/configs/watch5_random_1000_50M_150M_sweep.csv}"
-SWEEP_OUTPUT="${SWEEP_OUTPUT:-$SCRIPT_DIR/outputs/watch5_random_50M_150M_40C_decode32_results.csv}"
+SWEEP_CONFIG="${SWEEP_CONFIG:-$SCRIPT_DIR/configs/watch5_random_1000_50M_150M_sweep_batch2.csv}"
+SWEEP_OUTPUT="${SWEEP_OUTPUT:-$SCRIPT_DIR/outputs/watch5_random_50M_150M_40C_decode32_batch2_results.csv}"
 
 if command -v conda >/dev/null 2>&1; then
     CONDA_COMMAND="$(command -v conda)"

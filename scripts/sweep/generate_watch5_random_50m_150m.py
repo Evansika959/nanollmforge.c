@@ -130,17 +130,21 @@ def generate_random_configs(
     max_params_m=DEFAULT_MAX_PARAMS_M,
     seed=DEFAULT_SEED,
     max_attempts=None,
+    excluded_keys=None,
+    start_index=1,
 ):
     if num_samples <= 0:
         raise ValueError("num_samples must be positive")
     if min_params_m <= 0 or max_params_m <= min_params_m:
         raise ValueError("require 0 < min_params_m < max_params_m")
+    if start_index < 1:
+        raise ValueError("start_index must be positive")
 
     rng = random.Random(seed)
     max_attempts = max_attempts or max(100_000, num_samples * 1_000)
     suite_name = f"Random_{min_params_m:g}M_{max_params_m:g}M"
     configs = []
-    seen = set()
+    seen = set(excluded_keys or ())
     attempts = 0
 
     while len(configs) < num_samples and attempts < max_attempts:
@@ -156,7 +160,7 @@ def generate_random_configs(
             continue
 
         seen.add(key)
-        sample_idx = len(configs) + 1
+        sample_idx = len(configs) + start_index
         config.update(
             {
                 "config_id": f"RND_{sample_idx:04d}",
@@ -190,19 +194,39 @@ def parse_args():
     parser.add_argument("--max-params-m", type=float, default=DEFAULT_MAX_PARAMS_M)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--max-attempts", type=int, default=None)
+    parser.add_argument("--exclude-csv", action="append", default=[],
+                        help="Exclude architectures and IDs in an existing CSV; repeat for multiple batches")
+    parser.add_argument("--start-index", type=int, default=1,
+                        help="First RND ID and sample_idx (default: 1)")
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    excluded_keys = set()
+    excluded_ids = set()
+    for path in args.exclude_csv:
+        if os.path.realpath(path) == os.path.realpath(args.output):
+            raise ValueError("output must differ from excluded CSVs")
+        with open(path, newline="", encoding="utf-8") as source:
+            for row in csv.DictReader(source):
+                excluded_keys.add(architecture_key({
+                    key: int(row[key]) for key in
+                    ("n_layer", "d_model", "n_h", "n_kv", "d_qk", "d_v", "d_mlp")
+                }))
+                excluded_ids.add(row["config_id"])
     configs, attempts = generate_random_configs(
         num_samples=args.num_samples,
         min_params_m=args.min_params_m,
         max_params_m=args.max_params_m,
         seed=args.seed,
         max_attempts=args.max_attempts,
+        excluded_keys=excluded_keys,
+        start_index=args.start_index,
     )
+    if any(config["config_id"] in excluded_ids for config in configs):
+        raise ValueError("config IDs overlap excluded CSVs; increase --start-index")
 
     output = os.path.abspath(args.output)
     os.makedirs(os.path.dirname(output), exist_ok=True)
@@ -215,6 +239,7 @@ def main():
     print(f"Generated {len(configs)} unique random configurations in {attempts} draws")
     print(f"Parameter range: {min(sizes):.3f}M to {max(sizes):.3f}M")
     print(f"Seed: {args.seed}")
+    print(f"Excluded existing architectures: {len(excluded_keys)}")
     print(f"Saved: {output}")
 
 

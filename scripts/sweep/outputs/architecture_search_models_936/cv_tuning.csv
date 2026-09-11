@@ -1,0 +1,43 @@
+family,target,params,cv_loss,objective
+baseline,tpot_ms,{},0.23135525981585184,MAPE_fraction
+baseline,ttft_ms,{},0.20054463545481363,MAPE_fraction
+baseline,dynamic_energy_per_token_mj,{},0.33652278780937195,MAPE_fraction
+group_experts,tpot_ms,"{""depth"": 1, ""child"": 3}",0.23200958819417172,MAPE_fraction
+group_experts,tpot_ms,"{""depth"": 2, ""child"": 3}",0.23219165215028872,MAPE_fraction
+group_experts,tpot_ms,"{""depth"": 3, ""child"": 5}",0.23073652850530646,MAPE_fraction
+group_experts,ttft_ms,"{""depth"": 1, ""child"": 3}",0.20192912592636347,MAPE_fraction
+group_experts,ttft_ms,"{""depth"": 2, ""child"": 3}",0.20126113470285392,MAPE_fraction
+group_experts,ttft_ms,"{""depth"": 3, ""child"": 5}",0.20053138420231298,MAPE_fraction
+group_experts,dynamic_energy_per_token_mj,"{""depth"": 1, ""child"": 3}",0.3452910945458276,MAPE_fraction
+group_experts,dynamic_energy_per_token_mj,"{""depth"": 2, ""child"": 3}",0.34774270134310276,MAPE_fraction
+group_experts,dynamic_energy_per_token_mj,"{""depth"": 3, ""child"": 5}",0.3472399182124488,MAPE_fraction
+physics_ridge,tpot_ms,"{""alpha"": 1.0}",0.23197515499032587,MAPE_fraction
+physics_ridge,tpot_ms,"{""alpha"": 10.0}",0.23316441723754408,MAPE_fraction
+physics_ridge,tpot_ms,"{""alpha"": 100.0}",0.23812794420412953,MAPE_fraction
+physics_ridge,ttft_ms,"{""alpha"": 1.0}",0.19807800708310888,MAPE_fraction
+physics_ridge,ttft_ms,"{""alpha"": 10.0}",0.19864626639214808,MAPE_fraction
+physics_ridge,ttft_ms,"{""alpha"": 100.0}",0.20117067061415342,MAPE_fraction
+physics_ridge,dynamic_energy_per_token_mj,"{""alpha"": 1.0}",0.32085820080316785,MAPE_fraction
+physics_ridge,dynamic_energy_per_token_mj,"{""alpha"": 10.0}",0.3231003731054147,MAPE_fraction
+physics_ridge,dynamic_energy_per_token_mj,"{""alpha"": 100.0}",0.34245742853864386,MAPE_fraction
+physics_residual,tpot_ms,"{""alpha"": 1.0, ""depth"": 1}",0.2321591996569391,MAPE_fraction
+physics_residual,tpot_ms,"{""alpha"": 10.0, ""depth"": 1}",0.23329418561554585,MAPE_fraction
+physics_residual,tpot_ms,"{""alpha"": 10.0, ""depth"": 2}",0.23199026854972893,MAPE_fraction
+physics_residual,tpot_ms,"{""alpha"": 100.0, ""depth"": 2}",0.23366734118958832,MAPE_fraction
+physics_residual,ttft_ms,"{""alpha"": 1.0, ""depth"": 1}",0.198063628510916,MAPE_fraction
+physics_residual,ttft_ms,"{""alpha"": 10.0, ""depth"": 1}",0.19780224821209505,MAPE_fraction
+physics_residual,ttft_ms,"{""alpha"": 10.0, ""depth"": 2}",0.19611251332681592,MAPE_fraction
+physics_residual,ttft_ms,"{""alpha"": 100.0, ""depth"": 2}",0.197590155833787,MAPE_fraction
+physics_residual,dynamic_energy_per_token_mj,"{""alpha"": 1.0, ""depth"": 1}",0.3200185826478426,MAPE_fraction
+physics_residual,dynamic_energy_per_token_mj,"{""alpha"": 10.0, ""depth"": 1}",0.3225762034734661,MAPE_fraction
+physics_residual,dynamic_energy_per_token_mj,"{""alpha"": 10.0, ""depth"": 2}",0.3230341002223784,MAPE_fraction
+physics_residual,dynamic_energy_per_token_mj,"{""alpha"": 100.0, ""depth"": 2}",0.3301282074027369,MAPE_fraction
+ranker,tpot_ms,"{""depth"": 1}",0.6666666666666666,1-top10pct_recall
+ranker,tpot_ms,"{""depth"": 2}",0.6,1-top10pct_recall
+ranker,tpot_ms,"{""depth"": 4}",0.7000000000000001,1-top10pct_recall
+ranker,ttft_ms,"{""depth"": 1}",0.6,1-top10pct_recall
+ranker,ttft_ms,"{""depth"": 2}",0.6666666666666666,1-top10pct_recall
+ranker,ttft_ms,"{""depth"": 4}",0.6666666666666666,1-top10pct_recall
+ranker,dynamic_energy_per_token_mj,"{""depth"": 1}",0.7166666666666667,1-top10pct_recall
+ranker,dynamic_energy_per_token_mj,"{""depth"": 2}",0.7666666666666666,1-top10pct_recall
+ranker,dynamic_energy_per_token_mj,"{""depth"": 4}",0.6666666666666666,1-top10pct_recall
