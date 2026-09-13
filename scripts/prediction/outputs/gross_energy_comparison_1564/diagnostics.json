@@ -1,0 +1,51 @@
+{
+  "saved_tree_prediction_checks": 1884,
+  "summary_checks": 72,
+  "current_sources_match_frozen_hashes": true,
+  "baseline_power_w_quantiles": {
+    "p10": 0.07895,
+    "median": 0.2476,
+    "p90": 0.30061000000000004
+  },
+  "residual_state_correlations": {
+    "gross": {
+      "baseline_power_w": -0.8883223151336285,
+      "active_power_w": -0.8440052856694847,
+      "temp_cpu_start_c": -0.7330108178881553,
+      "duration_s": -0.4047107559737234
+    },
+    "dynamic": {
+      "baseline_power_w": -0.4148326656264595,
+      "active_power_w": -0.67328293788339,
+      "temp_cpu_start_c": -0.543642744652187,
+      "duration_s": -0.3259338723709861
+    }
+  },
+  "baseline_bands": [
+    {
+      "baseline_band": "below_150mW",
+      "n": 118,
+      "median_prediction_to_actual_ratio": {
+        "gross": 1.7083339637094466,
+        "dynamic": 1.2551445017677896
+      }
+    },
+    {
+      "baseline_band": "150_to_200mW",
+      "n": 3,
+      "median_prediction_to_actual_ratio": {
+        "gross": 1.433432509151723,
+        "dynamic": 1.1623769075122132
+      }
+    },
+    {
+      "baseline_band": "at_least_200mW",
+      "n": 193,
+      "median_prediction_to_actual_ratio": {
+        "gross": 0.7300594497191644,
+        "dynamic": 0.7980127945787415
+      }
+    }
+  ],
+  "notes": "Post-hoc diagnostic only: observed power, temperature and batch/order are never predictor inputs. Correlation is not causation. Baseline bands are descriptive, not filtering/tuning rules. Signed residual is mean across seeds of log(prediction/actual)."
+}

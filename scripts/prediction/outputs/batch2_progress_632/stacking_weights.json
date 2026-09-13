@@ -1,0 +1,83 @@
+[
+  {
+    "seed": 42,
+    "target": "decode_tok_s",
+    "intercept": -0.030370920377105204,
+    "xgboost": 0.6708521232381789,
+    "extratrees": 0.05719481614135403,
+    "randomforest": 0.09268052951016988,
+    "residual_mlp": 0.1897748103991237
+  },
+  {
+    "seed": 42,
+    "target": "ttft_ms",
+    "intercept": -0.04061293408128375,
+    "xgboost": 0.46832399003262865,
+    "extratrees": 0.1796077207563041,
+    "randomforest": 0.0,
+    "residual_mlp": 0.35761441164585395
+  },
+  {
+    "seed": 42,
+    "target": "dynamic_energy_per_token_mj",
+    "intercept": -0.03909416177418734,
+    "xgboost": 0.37203003716041666,
+    "extratrees": 0.0,
+    "randomforest": 0.05876193751163474,
+    "residual_mlp": 0.5761064958470032
+  },
+  {
+    "seed": 123,
+    "target": "decode_tok_s",
+    "intercept": -0.06861030707950366,
+    "xgboost": 0.6336670275755225,
+    "extratrees": 0.0,
+    "randomforest": 0.2117122177297268,
+    "residual_mlp": 0.1772295773305642
+  },
+  {
+    "seed": 123,
+    "target": "ttft_ms",
+    "intercept": -0.05689755859239032,
+    "xgboost": 0.386364378522891,
+    "extratrees": 0.18604111000014265,
+    "randomforest": 0.023176312057309318,
+    "residual_mlp": 0.4129654898432616
+  },
+  {
+    "seed": 123,
+    "target": "dynamic_energy_per_token_mj",
+    "intercept": -0.0551740343376963,
+    "xgboost": 0.5579843635093493,
+    "extratrees": 0.0,
+    "randomforest": 0.07322343175118856,
+    "residual_mlp": 0.3845122399119204
+  },
+  {
+    "seed": 2026,
+    "target": "decode_tok_s",
+    "intercept": -0.06301855746703877,
+    "xgboost": 0.6123098892814729,
+    "extratrees": 0.15326083261652768,
+    "randomforest": 0.051427498926008196,
+    "residual_mlp": 0.20338396884504564
+  },
+  {
+    "seed": 2026,
+    "target": "ttft_ms",
+    "intercept": -0.04685700739130194,
+    "xgboost": 0.3828399175922252,
+    "extratrees": 0.12612685987094982,
+    "randomforest": 0.0,
+    "residual_mlp": 0.4977621602636024
+  },
+  {
+    "seed": 2026,
+    "target": "dynamic_energy_per_token_mj",
+    "intercept": -0.07684520004822071,
+    "xgboost": 0.4670726189120949,
+    "extratrees": 0.0,
+    "randomforest": 0.0,
+    "residual_mlp": 0.5554215523350198
+  }
+]

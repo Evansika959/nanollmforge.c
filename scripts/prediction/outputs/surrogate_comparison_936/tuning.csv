@@ -1,0 +1,9 @@
+model,params,validation_standardized_log_mse,seconds
+xgboost,"{""max_depth"": 2, ""min_child_weight"": 3, ""reg_lambda"": 5}",0.2466825693845749,0.2565237079979852
+xgboost,"{""max_depth"": 3, ""min_child_weight"": 3, ""reg_lambda"": 5}",0.25246167182922363,0.2191084999940358
+xgboost,"{""max_depth"": 4, ""min_child_weight"": 5, ""reg_lambda"": 10}",0.25544145703315735,0.2959212920104619
+xgboost,"{""max_depth"": 6, ""min_child_weight"": 5, ""reg_lambda"": 10}",0.2610507309436798,0.38302779200603254
+transformer,"{""width"": 32, ""dropout"": 0.1, ""lr"": 0.001}",0.25497543811798096,4.4460225839866325
+transformer,"{""width"": 32, ""dropout"": 0.2, ""lr"": 0.0003}",0.24994151294231415,8.469673042010982
+transformer,"{""width"": 64, ""dropout"": 0.1, ""lr"": 0.001}",0.2565423548221588,3.975496082974132
+transformer,"{""width"": 64, ""dropout"": 0.2, ""lr"": 0.0003}",0.27390074729919434,7.529977458005305

@@ -41,6 +41,7 @@ __pycache__/
 *.pyc
 
 # Scratch / reference dumps
+/.local_archive/
 /ref_out.txt
 /c_out.txt
 /*_ids.txt

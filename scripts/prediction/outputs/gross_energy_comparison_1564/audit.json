@@ -1,0 +1,15 @@
+{
+  "rows": 1564,
+  "unique_architectures": 1564,
+  "max_gross_reconciliation_error_j": 0.0004922000000000537,
+  "max_dynamic_reconciliation_error_mj": 0.023862722167962147,
+  "excluded_from_frozen_snapshot": [
+    "RND_1054",
+    "RND_1250",
+    "RND_1410",
+    "RND_1597"
+  ],
+  "max_frozen_baseline_mape_difference_pp": 1.4901161193847656e-06,
+  "frozen_metric_checks": 81,
+  "source_hashes_unchanged": true
+}

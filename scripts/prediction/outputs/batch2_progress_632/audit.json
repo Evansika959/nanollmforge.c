@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "baseline_checks": 36,
+  "oof_folds": 15,
+  "train_n": 1100,
+  "validation_n": 150,
+  "test_n": 314
+}

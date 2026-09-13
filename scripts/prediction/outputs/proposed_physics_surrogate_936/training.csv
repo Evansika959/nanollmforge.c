@@ -1,0 +1,4 @@
+seed,stage,seconds,best_epoch,total_epochs
+42,transformer,12.116720125020947,9,44
+123,transformer,12.175323083996773,9,44
+2026,transformer,14.279481208010111,16,51
