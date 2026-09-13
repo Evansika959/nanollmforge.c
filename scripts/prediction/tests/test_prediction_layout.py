@@ -15,6 +15,7 @@ from ..config import FEATURES
 from ..features.analytic import physical_features
 from ..data.legacy import load_cohort
 from ..inference.neural import predict_neural
+from ..inference.predictor import predict_bundle, bundle_targets
 
 
 class PredictionLayoutTests(unittest.TestCase):
@@ -62,6 +63,20 @@ class PredictionLayoutTests(unittest.TestCase):
         pack = load_bundle(self.outputs/'gross_energy_comparison_1564/grouped_transformer_seed42.joblib')
         x = pack['profile'].transform(self.configs)
         self.check_predictions('transformer32',np.exp(predict_neural(pack,x))[:,2])
+
+    def test_legacy_stack_predictions_unchanged(self):
+        records = json.loads((self.outputs/'batch2_progress_632/predictions.json').read_text())
+        expected = [r for r in records if (r['model'],r['stage'],r['test'],r['target'],r['seed']) ==
+                    ('stack','plus_all','pooled_test','dynamic_energy_per_token_mj',42)]
+        configs = {r['config_id']:c for r,c in zip(self.rows,self.configs)}
+        pack = load_bundle(self.outputs/'batch2_progress_632/stacked_ensemble_seed42.joblib')
+        pred = predict_bundle(pack,[configs[r['config_id']] for r in expected])
+        np.testing.assert_allclose(pred[:,2],[r['prediction'] for r in expected],rtol=2e-6)
+
+    def test_gross_inference_uses_saved_label(self):
+        pack = load_bundle(self.outputs/'gross_energy_comparison_1564/grouped_transformer_seed42.joblib')
+        self.assertEqual(bundle_targets(pack)[2],'gross_energy_per_token_mj')
+        self.check_predictions('transformer32',predict_bundle(pack,self.configs)[:,2])
 
 
 if __name__ == '__main__':

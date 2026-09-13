@@ -117,6 +117,9 @@ class MeasurementDataset:
         document = self.to_dict()
         document['parent_sha256'] = self.fingerprint
         document['observations'].extend(new_rows)
+        document.setdefault('ingestions', []).append(dict(
+            round_ids=sorted({r['round_id'] for r in new_rows}),
+            source_hashes=copy.deepcopy(batch.get('source_hashes', {}))))
         return MeasurementDataset(document)
 
     def save(self, path):

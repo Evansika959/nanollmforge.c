@@ -1,5 +1,6 @@
 """Synthetic round/pipeline tests; never write production datasets or checkpoints."""
 import copy
+import csv
 from dataclasses import asdict
 import importlib
 import json
@@ -15,6 +16,7 @@ import torch
 
 from ..__main__ import COMMANDS
 from ..data.dataset import MeasurementDataset
+from ..data.hardware_csv import normalize_batch
 from ..inference.predictor import bundle_targets, predict_bundle
 from ..models.serialization import load_bundle
 from ..training.pipeline import fit_dataset
@@ -94,10 +96,48 @@ class DatasetTests(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 self.dataset.save(path)
 
+    def test_hardware_csv_import_and_source_provenance(self):
+        original = self.dataset.observations[0]
+        config = dict(config_id=original['config_id'], **original['architecture'])
+        measurement = dict(config, decode_tok_s=30, ttft_ms=100,
+                           dynamic_energy_per_token_mj=10, total_energy_j=.64, notes='')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name,record in [('configs.csv',config),('measurements.csv',measurement)]:
+                with (root/name).open('w',newline='') as stream:
+                    writer = csv.DictWriter(stream,fieldnames=list(record))
+                    writer.writeheader()
+                    writer.writerow(record)
+            batch = normalize_batch(root/'configs.csv',root/'measurements.csv',self.dataset.protocol,'round1')
+            self.assertEqual(batch['observations'][0]['metrics']['gross_energy_per_token_mj'],20)
+            child = self.dataset.append_training(batch)
+            self.assertEqual(child.to_dict()['ingestions'][-1]['source_hashes'],batch['source_hashes'])
+            with self.assertRaisesRegex(ValueError,'Duplicate'):
+                child.append_training(batch)
+
+    def test_bad_csv_architecture_and_flags_rejected(self):
+        config = dict(config_id='c0', **self.dataset.observations[0]['architecture'])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with (root/'configs.csv').open('w',newline='') as stream:
+                writer = csv.DictWriter(stream,fieldnames=list(config))
+                writer.writeheader()
+                writer.writerow(config)
+            for changes in [dict(d_model=999),dict(notes='baseline_drift'),dict(output_tokens=64)]:
+                measurement = dict(config,decode_tok_s=30,ttft_ms=100,total_energy_j=.64,
+                                   dynamic_energy_per_token_mj=10,notes='')
+                measurement.update(changes)
+                with (root/'measurements.csv').open('w',newline='') as stream:
+                    writer = csv.DictWriter(stream,fieldnames=list(measurement))
+                    writer.writeheader()
+                    writer.writerow(measurement)
+                with self.assertRaises(ValueError):
+                    normalize_batch(root/'configs.csv',root/'measurements.csv',self.dataset.protocol,'round1')
+
 
 class PipelineTests(unittest.TestCase):
     def setUp(self):
-        torch.set_num_threads(2)
+        torch.set_num_threads(4)
 
     def test_test_labels_cannot_affect_fit_or_calibration(self):
         original = example_document()
@@ -142,6 +182,15 @@ class PipelineTests(unittest.TestCase):
     def test_all_cli_modules_import(self):
         for module in COMMANDS.values():
             self.assertTrue(callable(importlib.import_module(module).main))
+
+    def test_core_does_not_import_experiment_scripts(self):
+        import ast
+        package = Path(__file__).resolve().parents[1]
+        for folder in ['data','features','models','training','inference']:
+            for path in (package/folder).glob('*.py'):
+                for node in ast.walk(ast.parse(path.read_text())):
+                    if isinstance(node,ast.ImportFrom):
+                        self.assertNotIn('experiments',node.module or '',str(path))
 
 
 if __name__ == '__main__':

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .dataset import MeasurementDataset
 from .legacy import load_cohort
+from .hardware_csv import normalize_batch
 
 
 def main():
@@ -18,8 +19,19 @@ def main():
     append.add_argument('--dataset', required=True, type=Path)
     append.add_argument('--batch', required=True, type=Path, help='Normalized batch JSON with protocol and observations')
     append.add_argument('--output', required=True, type=Path)
+    hardware = sub.add_parser('import-csv', help='Append a reviewed, completed hardware CSV batch')
+    hardware.add_argument('--dataset', required=True, type=Path)
+    hardware.add_argument('--configs', required=True, type=Path)
+    hardware.add_argument('--measurements', required=True, type=Path)
+    hardware.add_argument('--protocol', required=True, type=Path)
+    hardware.add_argument('--round-id', required=True)
+    hardware.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
-    if args.operation == 'append':
+    if args.operation == 'import-csv':
+        dataset = MeasurementDataset.load(args.dataset)
+        batch = normalize_batch(args.configs, args.measurements, json.loads(args.protocol.read_text()), args.round_id)
+        result = dataset.append_training(batch)
+    elif args.operation == 'append':
         dataset = MeasurementDataset.load(args.dataset)
         result = dataset.append_training(json.loads(args.batch.read_text()))
     else:

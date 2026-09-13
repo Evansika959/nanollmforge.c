@@ -3,12 +3,17 @@ import numpy as np
 
 from ..config import FEATURES, PHYSICS_TARGETS
 from ..features.analytic import physical_features
+from ..data.dataset import architecture_key, ENERGY_TARGETS
 from .neural import predict_neural
 from .trees import tree_predict
 from .ensemble import stack_predict
 
 
 def bundle_targets(pack):
+    if 'bundle_version' in pack:
+        expected = ['decode_tok_s', 'ttft_ms', ENERGY_TARGETS[pack['protocol']['energy_target']]]
+        if pack.get('targets') != expected:
+            raise ValueError('Bundle targets disagree with the declared energy protocol')
     targets = list(pack.get('targets', PHYSICS_TARGETS))
     if len(targets) != 3 or len(set(targets)) != 3:
         raise ValueError('Invalid model target schema')
@@ -18,6 +23,8 @@ def bundle_targets(pack):
 def predict_bundle(pack, configs):
     if not configs:
         raise ValueError('No architectures supplied')
+    for config in configs:
+        architecture_key(config)
     bundle_targets(pack)
     if 'bundle_version' in pack:
         if pack['bundle_version'] != 1:

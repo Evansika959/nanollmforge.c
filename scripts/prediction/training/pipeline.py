@@ -14,6 +14,8 @@ def fit_dataset(dataset, family='xgboost', seed=42, max_epochs=250):
     rows = dataset.observations
     configs = [r['architecture'] for r in rows]
     y = np.array([[float(r['metrics'][t]) for t in dataset.targets] for r in rows], dtype=np.float32)
+    if not np.isfinite(y).all() or not (y > 0).all():
+        raise ValueError('Targets exceed the supported float32 log-training range')
     train = np.array([i for i,r in enumerate(rows) if r['split'] == 'train'])
     val = np.array([i for i,r in enumerate(rows) if r['split'] == 'validation'])
     profile = HardwareProfile().fit([configs[i] for i in train], y[train])

@@ -1,5 +1,6 @@
 """Shared log-target neural optimization."""
 import copy
+import numpy as np
 import torch
 from torch import nn
 from sklearn.preprocessing import StandardScaler
