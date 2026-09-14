@@ -2,6 +2,8 @@
 
 A reusable prediction package, separate from device measurement code in `scripts/sweep/`.
 
+Active learning now defaults to baseline-subtracted **dynamic energy**. The [active-learning guide](active_learning/README.md) documents the audited `active switch-energy` transition, resumable `active run` command, and target-specific `active monitor` accuracy reports. Existing gross experiments are preserved rather than overwritten.
+
 ```text
 scripts/prediction/
 ├── data/          Dataset versions, hardware CSV ingestion, frozen legacy snapshots
@@ -12,11 +14,37 @@ scripts/prediction/
 ├── evaluation/    Metrics and historical-result audits
 ├── reporting/     Reports and plots; no model fitting
 ├── experiments/   Historical comparisons and fixed-cohort research experiments
+├── active_learning/ Accuracy-oriented acquisition, resumable hardware rounds, replay
 ├── tests/         Checkpoint regression, ingestion, split and leakage tests
-└── outputs/       Existing models, snapshots, predictions and reports (unchanged)
+└── outputs/       Local models, snapshots, predictions and reports (Git-ignored)
 ```
 
 Core modules do not import experiment scripts. Define a model in `models/`, fit it in `training/`, and expose its prediction in `inference/`. Shared architecture transformations belong in `features/`. Historical ablations retain their experiment-specific settings rather than silently changing old results.
+
+## Curated dataset and model delivery
+
+The repository-root [diliverable directory](../../diliverable/README.md) is the curated, non-ignored export; its spelling follows the requested folder name. The **2026-09-14 snapshot** contains:
+
+| Artifact under `diliverable/` | Meaning |
+|---|---|
+| `data/dataset_latest.json` | Dynamic round 9: 1,552 training + 150 validation + 314 test = 2,016 valid observations |
+| `models/predictor_best.joblib` | Dynamic round 1: lowest mean of the three fixed-validation MAPEs among the stage's initial and completed checkpoints |
+| `data/dataset_best_model.json` | Exact dataset matching that best checkpoint: 1,472 training + the same 464 holdout observations |
+| `models/predictor_latest.joblib` | Dynamic round 9 checkpoint, matching `dataset_latest.json` |
+
+Best energy validation MAPE is **43.558%**; three-target mean MAPE is **29.322%**. This is the best within the current dynamic stage, not across incompatible historical experiments, and not an independent test-set claim. The best checkpoint was **not** trained on the latest 1,552-row training set. For checkpoint-based initialization, always use its matching dataset; for prediction, either checkpoint accepts architecture configurations alone.
+
+The export includes selection results, source/protocol metadata, package versions, SHA-256 checks and the quarantined zero-energy record. See its README for inference examples and scope. Original raw traces and interrupted experiment state remain in the local workspace; this export is not a resumable AL workspace or a full raw-data backup.
+
+To create a later snapshot without accessing hardware or retraining, run from the repository root and choose a new destination:
+
+```bash
+python -m scripts.package_prediction_deliverable --destination diliverable_next
+```
+
+The exporter verifies committed history, requires the source workspace lock, reevaluates fixed validation only, and refuses to overwrite an existing destination. It copies artifacts; it does not move or delete experiment data.
+
+Both `/scripts/prediction/outputs/` and `/scripts/sweep/outputs/` are ignored by Git. Previously tracked outputs were removed from the index only, keeping all local files and existing Git history. A fresh checkout will therefore not supply those local historical artifacts or a resumable experiment workspace; use the curated delivery for prediction, and retain/back up the original workspace separately for resume or historical reproductions.
 
 ## Commands
 
@@ -27,6 +55,7 @@ python -m scripts.prediction --help
 python -m scripts.prediction train --help
 python -m scripts.prediction predict --help
 python -m scripts.prediction dataset --help
+python -m scripts.prediction active --help
 ```
 
 The former flat `python scripts/prediction/<name>.py` commands are replaced by `python -m scripts.prediction <name-with-hyphens>`. For example:
@@ -130,7 +159,7 @@ Measurement identity is `round_id` plus the supplied `measurement_id`/`run_id`, 
 - Hardware calibration and neural scalers use training rows only. Validation controls early stopping. Measured power, temperatures, batch ID and acquisition order are never features.
 - Repeatedly inspecting the same test across active-learning rounds remains exploratory. Keep a final prospective acquisition block untouched if you need an unbiased final assessment.
 
-This provides the ingestion/retraining boundary for active learning. It does **not** yet choose candidates, calibrate uncertainty, schedule measurements, charge/cool the watch, or deploy a replacement predictor. Acquisition policy (uncertainty/diversity/Pareto search) can be added on top of the shared prediction API without changing model definitions.
+An accuracy-oriented active-learning controller now builds on this ingestion/retraining boundary. It selects architecture-only committee-disagreement, coverage and random-exploration batches, optionally measures them with the existing sweep protocol, validates measurements, and retrains XGBoost on immutable dataset versions. Reference architectures and their drift gate are disabled by default (`--anchors 0`); they remain opt-in for control experiments. Hardware execution is opt-in. See [the active-learning guide](active_learning/README.md) for preparation, launch, audited no-anchor migration, recovery, budgets and limitations. This is not Pareto/architecture optimization, calibrated uncertainty, automatic charging, or automatic production-model promotion.
 
 ## Python API and normalized batch schema
 
@@ -165,7 +194,7 @@ A normalized append batch contains `protocol`, `observations`, and optional `sou
 
 ## Historical artifacts and compatibility
 
-All ten existing experiment directories remain in `outputs/`. Models, snapshots, measurements, reports and recorded historical hashes are unchanged. `relocation_manifest.json` describes the preceding move from `sweep/`; it is historical provenance, not a list of current module locations.
+The existing historical experiment directories remain locally in the Git-ignored `outputs/`. Models, snapshots, measurements, reports and recorded historical hashes are unchanged. Their availability is not guaranteed in a fresh checkout. `relocation_manifest.json` describes the preceding move from `sweep/`; it is historical provenance, not a list of current module locations.
 
 Old reports may show former commands/source paths. Use the new package CLI rather than editing those historical records. Trusted older checkpoints load through `models.serialization.load_bundle`, which supplies their old flat Python module names. Newly saved bundles use the package module paths.
 

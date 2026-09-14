@@ -4,6 +4,7 @@ import importlib
 import sys
 
 COMMANDS = {
+    "active": "scripts.prediction.active_learning.cli",
     "train": "scripts.prediction.training.run",
     "predict": "scripts.prediction.inference.predict_proposed_physics_surrogate",
     "dataset": "scripts.prediction.data.rounds",

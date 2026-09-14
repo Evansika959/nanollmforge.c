@@ -12,6 +12,15 @@
 > **Releases** page (`reallmforge/fetch_model.sh`) or regenerate them. Then:
 > `make rungelu && ./runq_gelu models/smollm2_135M/smollm2_135M.q8.bin -g models/smollm2_135M/tokenizer_gpt2.bin -i "Once upon a time" -t 0.8 -p 0.9 -n 128`
 
+> **Hardware prediction and active learning.** Architecture-only predictors and the
+> resumable watch measurement loop live in [`scripts/prediction/`](scripts/prediction/README.md).
+> The curated dataset/model snapshot is in [`diliverable/`](diliverable/README.md)
+> (intentional directory spelling): 2,016 valid observations at the 2026-09-14 export,
+> with separate validation-selected best and latest dynamic-energy checkpoints.
+> Experiment outputs under `scripts/prediction/outputs/` and `scripts/sweep/outputs/`
+> are local, Git-ignored artifacts; `diliverable/` is not ignored. See the
+> [active-learning guide](scripts/prediction/active_learning/README.md) for resume instructions.
+
 Have you ever wanted to inference a baby [Llama 2](https://ai.meta.com/llama/) model in pure C? No? Well, now you can!
 
 Train the Llama 2 LLM architecture in PyTorch then inference it with one simple 700-line C file ([run.c](src/run.c)). You might think that you need many billion parameter LLMs to do anything useful, but in fact very small LLMs can have surprisingly strong performance if you make the domain narrow enough (ref: [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories) paper). This repo is a "fullstack" train + inference solution for Llama 2 LLM, with focus on minimalism and simplicity.

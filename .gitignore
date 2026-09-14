@@ -42,6 +42,8 @@ __pycache__/
 
 # Scratch / reference dumps
 /.local_archive/
+/scripts/prediction/outputs/
+/scripts/sweep/outputs/
 /ref_out.txt
 /c_out.txt
 /*_ids.txt

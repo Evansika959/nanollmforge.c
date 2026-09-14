@@ -1,0 +1,17 @@
+{
+  "abi": "armeabi-v7a",
+  "battery_percent": 98.0,
+  "build": "google/godric_btwifi/godric_btwifi:17/CP3A.260905.002/15989242:user/release-keys",
+  "hardware_serial": "67301WRDQW80V6",
+  "model": "Pixel Watch 5",
+  "serial": "adb-67301WRDQW80V6-SCc6b3._adb-tls-connect._tcp",
+  "toolchain": {
+    "ndk": {
+      "path": "/Users/evansjiang/Library/Android/sdk/ndk/27.3.13750724",
+      "properties_sha256": "fb5eec1ca5dac09442109cf79e9ce49faecd8b312dbc997e88903a394e14994a"
+    },
+    "tokenizer_sha256": "f81a78fa696f65a2d1d9baf8c0bf77e20d35995ce5da961b01365c17d97c06d3"
+  },
+  "unplugged": true,
+  "warning": "Read-only connection/battery check; temperature, NDK build and measurement quality are checked at execution."
+}
