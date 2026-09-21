@@ -1,0 +1,71 @@
+{
+  "model": "XGBoost",
+  "seed": 2026,
+  "original_checkpoint": "XGBoost_seed2026.joblib",
+  "rule": "Family: minimum mean validation MAPE across three targets and three seeds; seed: minimum mean validation MAPE within selected family. No test-based selection.",
+  "family_validation_mape": {
+    "XGBoost": 20.483256126417515,
+    "Transformer-1x32": 20.934856366273138,
+    "Transformer-2x64": 20.919529487195444
+  },
+  "selected_validation_mape": [
+    25.455715726242005,
+    22.16576619268669,
+    13.477142882348037
+  ],
+  "test_metrics": {
+    "decode_tok_s": {
+      "mape": 25.906189411462744,
+      "spearman": 0.823915097877447,
+      "kendall_tau_b": 0.6380904522613066,
+      "pairwise_accuracy_pct": 81.90452261306532,
+      "pairwise_gap10_pct": 84.84142321245879,
+      "eligible_pairs": 19900,
+      "gap10_pairs": 17594,
+      "recall_at_k_pct": 56.25,
+      "ndcg_at_k": 0.8625836492924468,
+      "selection_regret_pct": 0.0,
+      "topk_regret_pct": 0.0,
+      "selected_id": "LW_9431c7d4935a459d00d4",
+      "actual_best_id": "LW_9431c7d4935a459d00d4"
+    },
+    "ttft_ms": {
+      "mape": 22.28936192892008,
+      "spearman": 0.8880507012675318,
+      "kendall_tau_b": 0.707537688442211,
+      "pairwise_accuracy_pct": 85.37688442211055,
+      "pairwise_gap10_pct": 88.06068601583114,
+      "eligible_pairs": 19900,
+      "gap10_pairs": 18192,
+      "recall_at_k_pct": 65.625,
+      "ndcg_at_k": 0.8758107531397236,
+      "selection_regret_pct": 53.90100119569836,
+      "topk_regret_pct": -0.0,
+      "selected_id": "LW_569da3693b460b1a78f0",
+      "actual_best_id": "LW_9431c7d4935a459d00d4"
+    },
+    "dynamic_energy_per_token_mj": {
+      "mape": 11.608751681704964,
+      "spearman": 0.9521548038700969,
+      "kendall_tau_b": 0.8126633165829146,
+      "pairwise_accuracy_pct": 90.63316582914572,
+      "pairwise_gap10_pct": 94.26998483231279,
+      "eligible_pairs": 19900,
+      "gap10_pairs": 17801,
+      "recall_at_k_pct": 75.0,
+      "ndcg_at_k": 0.8922185817837465,
+      "selection_regret_pct": 0.12243423998241545,
+      "topk_regret_pct": 0.12243423998241545,
+      "selected_id": "LW_9431c7d4935a459d00d4",
+      "actual_best_id": "LW_9be28d18c009abe6313a"
+    }
+  },
+  "dataset_sha256": "e14673856a5f96c9a7d334f488b98dcbb1f0ca737f1e721c54900be6f63a73e4",
+  "model_sha256": "b89ac1bd6a97db094ee8763d8f05a06af88acf2136f35c6d0edf34f6cfc65964",
+  "units": [
+    "tokens/s",
+    "ms",
+    "mJ/output token"
+  ],
+  "deployment": "Offline release only; no active-learning workspace/model state changed."
+}

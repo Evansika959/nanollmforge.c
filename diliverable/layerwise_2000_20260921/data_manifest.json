@@ -1,0 +1,43 @@
+{
+  "created_utc": "2026-09-21T16:42:43.674593+00:00",
+  "rows": 2000,
+  "splits": {
+    "test": 200,
+    "train": 1600,
+    "validation": 200
+  },
+  "valid_targets": {
+    "decode_tok_s": 2000,
+    "ttft_ms": 2000,
+    "dynamic_energy_per_token_mj": 1999
+  },
+  "dataset_sha256": "e14673856a5f96c9a7d334f488b98dcbb1f0ca737f1e721c54900be6f63a73e4",
+  "evidence_sha256": "1c39923cf44a22e7ccb9e33240675320b68b532a80c01ebc44b3c5ba91003065",
+  "campaigns": [
+    {
+      "campaign": 1,
+      "source": "/Users/evansjiang/Desktop/Work/nanollmforge.c/scripts/sweep/outputs/watch5_layerwise_500_v1",
+      "evidence_files": 4014,
+      "database_sha256": "8b78676e7f85aebd7174804a6c5d6422fb892c504ca23f160c150a5757cc3a09"
+    },
+    {
+      "campaign": 2,
+      "source": "/Users/evansjiang/Desktop/Work/nanollmforge.c/scripts/sweep/outputs/watch5_layerwise_500_variable_kv_v2",
+      "evidence_files": 4021,
+      "database_sha256": "247e16884328218d4a72120bbd3ec8ed41d1f5efd361977d2687d1005abce76d"
+    },
+    {
+      "campaign": 3,
+      "source": "/Users/evansjiang/Desktop/Work/nanollmforge.c/scripts/sweep/outputs/watch5_layerwise_1000_variable_kv_v3/part1",
+      "evidence_files": 4038,
+      "database_sha256": "77b3e3180004405ff1fe729ba0a6b761ac89d1ed8af8df86c5565cc90575d428"
+    },
+    {
+      "campaign": 4,
+      "source": "/Users/evansjiang/Desktop/Work/nanollmforge.c/scripts/sweep/outputs/watch5_layerwise_1000_variable_kv_v3/part2",
+      "evidence_files": 4021,
+      "database_sha256": "5a168c5d04773352479a9ee2e7a8161024414fc7ecb0fb345e390e626a4afcb6"
+    }
+  ],
+  "policy": "Accepted complete rows only; original registries unchanged; old attempts retained in backups/evidence."
+}

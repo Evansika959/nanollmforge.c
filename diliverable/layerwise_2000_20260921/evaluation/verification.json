@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "unit_tests_passed": 5,
+  "dataset_rows": 2000,
+  "unique_accepted_rows": 2000,
+  "raw_attempt_rows": 2001,
+  "valid_energy_labels": 1999,
+  "checked_checkpoint_reload_test_predictions": 9,
+  "checks": [
+    "All raw result hashes and archive copies match snapshot",
+    "Four SQLite backups pass integrity check and agree with accepted snapshot",
+    "No permutation-group overlap across splits",
+    "All nine checkpoint hashes and dataset IDs match",
+    "All nine reloaded test predictions exactly match saved arrays",
+    "Full error/ranking metrics and 3000-draw paired bootstrap exactly reproduce",
+    "Final family and seed independently reselected using validation only",
+    "All archived training source hashes match originals",
+    "Kernel unchanged and matches collection contract"
+  ]
+}

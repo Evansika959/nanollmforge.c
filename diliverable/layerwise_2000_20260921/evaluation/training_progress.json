@@ -1,0 +1,169 @@
+{
+  "details": {
+    "XGBoost": [
+      {
+        "seed": 42,
+        "train_seconds": 0.749833874986507,
+        "counts": [
+          {
+            "train": 1600,
+            "validation": 200,
+            "best_iteration": 348
+          },
+          {
+            "train": 1600,
+            "validation": 200,
+            "best_iteration": 164
+          },
+          {
+            "train": 1599,
+            "validation": 200,
+            "best_iteration": 271
+          }
+        ]
+      },
+      {
+        "seed": 123,
+        "train_seconds": 0.7931999580468982,
+        "counts": [
+          {
+            "train": 1600,
+            "validation": 200,
+            "best_iteration": 443
+          },
+          {
+            "train": 1600,
+            "validation": 200,
+            "best_iteration": 246
+          },
+          {
+            "train": 1599,
+            "validation": 200,
+            "best_iteration": 280
+          }
+        ]
+      },
+      {
+        "seed": 2026,
+        "train_seconds": 0.7443900830112398,
+        "counts": [
+          {
+            "train": 1600,
+            "validation": 200,
+            "best_iteration": 333
+          },
+          {
+            "train": 1600,
+            "validation": 200,
+            "best_iteration": 342
+          },
+          {
+            "train": 1599,
+            "validation": 200,
+            "best_iteration": 316
+          }
+        ]
+      }
+    ],
+    "Transformer-1x32": [
+      {
+        "seed": 42,
+        "train_seconds": 8.93907862494234,
+        "best_epoch": 53,
+        "epochs": 98,
+        "parameter_count": 12995
+      },
+      {
+        "seed": 123,
+        "train_seconds": 9.85464241693262,
+        "best_epoch": 50,
+        "epochs": 95,
+        "parameter_count": 12995
+      },
+      {
+        "seed": 2026,
+        "train_seconds": 10.40621733397711,
+        "best_epoch": 61,
+        "epochs": 106,
+        "parameter_count": 12995
+      }
+    ],
+    "Transformer-2x64": [
+      {
+        "seed": 42,
+        "train_seconds": 15.445862957974896,
+        "best_epoch": 19,
+        "epochs": 64,
+        "parameter_count": 75843
+      },
+      {
+        "seed": 123,
+        "train_seconds": 14.244838749989867,
+        "best_epoch": 15,
+        "epochs": 60,
+        "parameter_count": 75843
+      },
+      {
+        "seed": 2026,
+        "train_seconds": 14.009634125046432,
+        "best_epoch": 14,
+        "epochs": 59,
+        "parameter_count": 75843
+      }
+    ]
+  },
+  "validation": {
+    "XGBoost": [
+      [
+        25.73855536638175,
+        22.39632883208152,
+        13.490696149053905
+      ],
+      [
+        25.737674215874957,
+        22.40469383316749,
+        13.482731939921266
+      ],
+      [
+        25.455715726242005,
+        22.16576619268669,
+        13.477142882348037
+      ]
+    ],
+    "Transformer-1x32": [
+      [
+        26.030862761926333,
+        22.441873462951857,
+        14.836623109833887
+      ],
+      [
+        26.1429209970148,
+        22.533630685335066,
+        14.598829573718202
+      ],
+      [
+        25.682016810061292,
+        22.01265985974011,
+        14.13429003587667
+      ]
+    ],
+    "Transformer-2x64": [
+      [
+        25.579508796042433,
+        22.694884109763883,
+        14.63994378853637
+      ],
+      [
+        25.989327581139506,
+        21.564381780634932,
+        14.642974936682531
+      ],
+      [
+        25.446261953853554,
+        22.75058900466863,
+        14.96789343343716
+      ]
+    ]
+  },
+  "elapsed_seconds": 75.45919524994679
+}

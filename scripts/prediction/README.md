@@ -2,6 +2,33 @@
 
 A reusable prediction package, separate from device measurement code in `scripts/sweep/`.
 
+The isolated [compact-surrogate study](../prediction_research/compact_surrogates/README.md)
+compares 1–2-layer 32/64-wide Transformers and two-hidden-layer MLPs on the frozen
+1,564-architecture cohort (1,100/150/314 split). Its definitions, training and
+reporting live outside this package so existing AL source contracts remain valid.
+The local `outputs/compact_surrogates_1564/README.md` records validation-selected
+three-seed results: small Transformer MAPE 22.23/18.83/26.96%, two-hidden-layer MLP
+22.47/19.36/28.64% (throughput/TTFT/dynamic energy). Historical XGBoost remains
+20.80/19.06/26.69%. This is exploratory test reuse, not a production-model promotion
+or a pure capacity ablation (the neural stopping criterion also differs).
+
+The new [layerwise 500-candidate sampling preparation](../sweep/layerwise/README.md)
+is a separate hardware campaign with a confirmed fixed skeleton. Existing predictor checkpoints and this
+package's homogeneous architecture schema do not accept its ordered layer lists;
+do not ingest those candidates into the old AL workspace. Its explicit runner
+collects new labels; no layerwise predictor is trained by that measurement tool.
+An independent [layerwise XGBoost refit](../prediction_research/layerwise_refit/README.md)
+now snapshots these registries, preserves their grouped holdouts, and saves
+architecture-only checkpoints without changing live collection or AL state.
+The [2,000-architecture frozen release](../../diliverable/layerwise_2000_20260921/README.md)
+uses identical 110 features and 1600/200/200 grouped splits, with three seeds.
+Mean test MAPE (throughput/TTFT/dynamic energy) is 26.06/21.95/11.57% for XGBoost,
+26.46/22.63/12.13% for Transformer 1x32, and 26.52/22.73/11.78% for Transformer 2x64.
+The final validation-selected XGBoost seed-2026 checkpoint has individual test MAPE
+25.91/22.29/11.61%; it is saved with the dataset, SQLite backups, raw evidence and reports.
+The [earlier 1,745-row comparison](../prediction_research/layerwise_compare/README.md)
+is preserved as historical context; its 184-row test set differs from the current 200.
+
 Active learning now defaults to baseline-subtracted **dynamic energy**. The [active-learning guide](active_learning/README.md) documents the audited `active switch-energy` transition, resumable `active run` command, and target-specific `active monitor` accuracy reports. Existing gross experiments are preserved rather than overwritten.
 
 ```text
@@ -201,6 +228,10 @@ Old reports may show former commands/source paths. Use the new package CLI rathe
 Shared measurement/configuration files remain under `scripts/sweep/`. Stability-verification archives and inference C sources are untouched.
 
 ## Tests
+
+Offline recorded-start-temperature ablations are isolated under
+[`prediction_research/state_inputs`](../prediction_research/state_inputs/README.md).
+They preserve production/AL source contracts and do not promote diagnostic models.
 
 ```bash
 python -m unittest discover -s scripts/prediction/tests -t . -v

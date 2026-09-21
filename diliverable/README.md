@@ -1,5 +1,10 @@
 # Hardware predictor delivery — dynamic energy
 
+**Separate newer release:** [2,000 layerwise architectures, 2026-09-21](layerwise_2000_20260921/README.md)
+contains frozen databases/raw evidence, matched XGBoost/Transformer training,
+and a validation-selected final XGBoost checkpoint. It does not replace or mix
+with the older homogeneous AL bundle documented below.
+
 本目录按用户指定的 `diliverable` 命名，保留在 Git ignore 之外。内容是已有数据和 checkpoint 的校验副本，没有重新训练、改写原始实验或启动硬件。
 
 导出快照日期：**2026-09-14**。本说明的轮次和指标对应导出时点，不随后续实验自动更新。模块说明见 [prediction README](../scripts/prediction/README.md)，实际续跑步骤见 [active-learning guide](../scripts/prediction/active_learning/README.md)。

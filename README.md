@@ -21,6 +21,18 @@
 > are local, Git-ignored artifacts; `diliverable/` is not ignored. See the
 > [active-learning guide](scripts/prediction/active_learning/README.md) for resume instructions.
 
+> **Layerwise sampling preparation.** The separate [500-candidate registry](scripts/sweep/layerwise/README.md)
+> covers the two software-search families with ordered heterogeneous layers and GS16/32/64 strata.
+> The fixed skeleton is confirmed; an explicit resumable runner collects aligned power/timing traces.
+> This is a separate measurement protocol and does not resume or alter the existing active-learning experiment.
+> Both initial 500-point batches are complete; the second adds per-layer variable KV heads
+> (all divisors of attention heads). The subsequent 1,000-point queue is also complete:
+> **2,000 accepted architectures**, with 1,999 valid energy labels after the audited retest.
+> The [2026-09-21 frozen dataset/model release](diliverable/layerwise_2000_20260921/README.md)
+> preserves databases and raw evidence, uses 1600/200/200 grouped splits, and compares
+> XGBoost with two small Transformers. Its validation-selected final XGBoost checkpoint
+> has test MAPE 25.91% / 22.29% / 11.61% (throughput / TTFT / dynamic energy).
+
 Have you ever wanted to inference a baby [Llama 2](https://ai.meta.com/llama/) model in pure C? No? Well, now you can!
 
 Train the Llama 2 LLM architecture in PyTorch then inference it with one simple 700-line C file ([run.c](src/run.c)). You might think that you need many billion parameter LLMs to do anything useful, but in fact very small LLMs can have surprisingly strong performance if you make the domain narrow enough (ref: [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories) paper). This repo is a "fullstack" train + inference solution for Llama 2 LLM, with focus on minimalism and simplicity.
