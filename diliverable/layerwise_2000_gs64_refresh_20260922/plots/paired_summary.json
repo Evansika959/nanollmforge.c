@@ -1,0 +1,20 @@
+[
+  {
+    "target": "decode_tok_s",
+    "n": 664,
+    "median_new_over_old": 3.0011220867768533,
+    "median_reduction_pct": -200.11220867768535
+  },
+  {
+    "target": "ttft_ms",
+    "n": 664,
+    "median_new_over_old": 0.6606937159824475,
+    "median_reduction_pct": 33.93062840175525
+  },
+  {
+    "target": "dynamic_energy_per_token_mj",
+    "n": 663,
+    "median_new_over_old": 0.5377599892277019,
+    "median_reduction_pct": 46.224001077229815
+  }
+]

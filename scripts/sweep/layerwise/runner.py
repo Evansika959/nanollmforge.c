@@ -182,11 +182,13 @@ def measure(d,folder,remote,attempt,prompt):
     return metrics
 
 
-def run(folder,serial,max_jobs=500,acknowledge=False):
+def run(folder,serial,max_jobs=500,acknowledge=False,*,validator=None,expected_model_hashes=None,expected_last_tokens=None):
     if not acknowledge: raise ValueError('Review README and pass --acknowledge-protocol')
     if max_jobs<1: raise ValueError('max-jobs must be positive')
     folder=Path(folder).resolve(); db=folder/'candidates.sqlite'
-    validate_database(db)
+    (validator or validate_database)(db)
+    with sqlite3.connect(db.resolve().as_uri()+'?mode=ro',uri=True) as count_con:
+        total_jobs=count_con.execute('SELECT count(*) FROM jobs').fetchone()[0]
     d=Device(serial); start_sources=source_hashes()
     state=dict(status='preflight',pid=os.getpid(),serial=serial)
     def update(**values):
@@ -220,7 +222,7 @@ def run(folder,serial,max_jobs=500,acknowledge=False):
             if not prior:
                 atomic_json(contract_path,protocol)
                 atomic_json(folder/'confirmation.json',dict(skeleton_confirmed=True,source='User: 是一致 准备开跑并进行监测',
-                    note='Original preparation snapshot remains unchanged. Current kernel frozen; no GS64 optimization. New measurement wrapper/energy protocol is separate from legacy AL.'))
+                    note='Prepared candidate identities retained; exact kernel and source hashes frozen in hardware_contract.json. This measurement protocol is separate from legacy AL.'))
             protocol_sha=fingerprint(protocol)
             remote='/data/local/tmp/nlf_lw_'+protocol_sha[:12]
             d.shell('mkdir -p '+remote)
@@ -235,7 +237,7 @@ def run(folder,serial,max_jobs=500,acknowledge=False):
                     if (folder/'STOP').exists(): raise Paused('STOP requested; completed measurements retained')
                     if source_hashes()!=start_sources: raise Paused('Source changed during run')
                     update(status='admission',ordinal=ordinal,batch=batch,candidate_id=ident)
-                    admission=d.ready(); print(f'[{ordinal}/500] batch {batch} {ident}: battery {admission["battery_percent"]:g}%, {admission["temperature_c"]:.1f}C',flush=True)
+                    admission=d.ready(); print(f'[{ordinal}/{total_jobs}] batch {batch} {ident}: battery {admission["battery_percent"]:g}%, {admission["temperature_c"]:.1f}C',flush=True)
                     d.shell('input keyevent KEYCODE_WAKEUP')
                     arch=read_candidate(db,ident)
                     jobfolder=folder/'attempts'/f'{ordinal:04d}_{ident}'; jobfolder.mkdir(parents=True,exist_ok=True)
@@ -244,6 +246,8 @@ def run(folder,serial,max_jobs=500,acknowledge=False):
                     for result in sorted(jobfolder.glob('*/result.json')):
                         meta=json.loads(result.with_name('provenance.json').read_text())
                         if meta['protocol_sha256']!=protocol_sha or meta['architecture_sha256']!=fingerprint(arch): raise Paused('Attempt provenance mismatch')
+                        if expected_model_hashes and meta['model']['model_sha256']!=expected_model_hashes[ident]:
+                            raise Paused('Recovered model differs from baseline weights')
                         recovered=(result.parent,parse(result.parent)); break
                     model=folder/'build/model.q8.rlm'
                     if not recovered:
@@ -253,6 +257,8 @@ def run(folder,serial,max_jobs=500,acknowledge=False):
                             if path.exists(): path.unlink()
                         metadata=export_mock(arch,model)
                         metadata['model_sha256']=digest(model)
+                        if expected_model_hashes and metadata['model_sha256']!=expected_model_hashes[ident]:
+                            raise Paused('Regenerated model differs from baseline weights; do not mix this comparison')
                         update(status='uploading'); d.push(model,remote+'/model.q8.rlm')
                         actual=d.shell('sha256sum '+remote+'/model.q8.rlm').split()[0]
                         if actual!=metadata['model_sha256']: raise Paused('Pushed model checksum mismatch')
@@ -265,14 +271,16 @@ def run(folder,serial,max_jobs=500,acknowledge=False):
                             update(status='measuring',attempt=number,battery_percent=admission['battery_percent'])
                             metrics=measure(d,folder,remote,attempt,prompt)
                             if metrics is not None: recovered=(attempt,metrics); break
-                            print(f'[{ordinal}/500] admission became >=45C before inference; cooling, retry {retry+1}/3',flush=True)
+                            print(f'[{ordinal}/{total_jobs}] admission became >=45C before inference; cooling, retry {retry+1}/3',flush=True)
                         if not recovered: raise Paused('Three pre-inference thermal rejections; measurements excluded, job retryable')
                     attempt,metrics=recovered
+                    if expected_last_tokens and metrics['timing']['last_token']!=expected_last_tokens[ident]:
+                        raise Paused('Generated token differs from the paired baseline; retain raw attempt for numerical investigation before accepting labels')
                     con.execute('INSERT INTO measurements VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',(
                         ident,int(attempt.name),str(attempt.relative_to(folder)),protocol['kernel_sha256'],protocol_sha,1,
                         metrics['decode_tok_s'],metrics['ttft_ms'],metrics['dynamic_energy_per_token_mj'],metrics['baseline_power_w'],metrics['active_power_w'],metrics['duration_s']))
                     con.execute('UPDATE jobs SET status="complete" WHERE candidate_id=?',(ident,)); con.commit()
-                    print(f'[{ordinal}/500] saved: {metrics["decode_tok_s"]:.3f} tok/s, TTFT {metrics["ttft_ms"]:.1f} ms, dynamic {metrics["dynamic_energy_per_token_mj"]} mJ/token; {metrics.get("energy_warning")}',flush=True)
+                    print(f'[{ordinal}/{total_jobs}] saved: {metrics["decode_tok_s"]:.3f} tok/s, TTFT {metrics["ttft_ms"]:.1f} ms, dynamic {metrics["dynamic_energy_per_token_mj"]} mJ/token; {metrics.get("energy_warning")}',flush=True)
                     # Remove only this job's generated model; raw traces/metadata remain.
                     if model.exists(): model.unlink()
                     if model.with_suffix('.rlm.json').exists(): model.with_suffix('.rlm.json').unlink()
@@ -282,7 +290,7 @@ def run(folder,serial,max_jobs=500,acknowledge=False):
                     if ordinal%10==0:
                         atomic_json(folder/f'batch_{batch:03d}_report.json',report)
                         print('BATCH COMPLETE '+json.dumps(report),flush=True)
-            update(status='complete' if status(folder)['jobs'].get('complete',0)==500 else 'paused',message='Requested job budget reached')
+            update(status='complete' if status(folder)['jobs'].get('complete',0)==total_jobs else 'paused',message='Requested job budget reached')
     except (Exception,KeyboardInterrupt) as error:
         message=str(error) or 'Interrupted; resume same command'
         if owns_workspace: update(status='paused',message=message)

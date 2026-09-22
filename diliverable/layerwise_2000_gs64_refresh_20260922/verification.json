@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "unit_tests_passed": 5,
+  "replaced": 664,
+  "retained": 1336,
+  "architectures": 2000,
+  "valid_labels_per_target": 2000,
+  "feature_matrix_shape": [
+    2000,
+    110
+  ],
+  "checks": [
+    "Original release hashes unchanged",
+    "Exact architecture identity/order/splits/cohorts retained",
+    "No permutation-group split leakage",
+    "1336 original label/warning/protocol records unchanged",
+    "664 full measurements replaced, raw-trace reparsing verified by publisher",
+    "All copied results and zipped copies match selected hashes",
+    "SQLite/JSON labels and rows agree exactly",
+    "All 110 feature values unchanged; only measurement labels/provenance updated",
+    "All three targets finite and positive; no imputation",
+    "Both figures visually inspected"
+  ]
+}

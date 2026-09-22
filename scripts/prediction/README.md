@@ -1,5 +1,22 @@
 # Hardware performance prediction
 
+**Current delivery / latest reported result (2026-09-22):** [TPOT XGBoost refit](../../diliverable/layerwise_tpot_2000_20260922/README.md),
+implemented in the isolated [TPOT training/reporting module](../prediction_research/layerwise_tpot/README.md).
+Outputs are **TPOT (not throughput), TTFT, dynamic energy**, all lower-is-better.
+Using 110 features and 1600/200/200 splits, three-seed mean test MAPE is
+**15.50% / 16.52% / 13.97%**. The final checkpoint is validation-selected seed 2026.
+Its individual test MAPE is 15.46% / 16.49% / 13.97%; do not confuse this with the
+three-seed mean. See the [delivery index and file checklist](../../diliverable/README.md)
+for the current model, labels, raw evidence, test predictions, and checksum manifests.
+Old AL and throughput predictors below retain their original target schemas; they are not migrated or overwritten.
+
+Latest data-only release: [2,000 layerwise points after the GS64 refresh](../../diliverable/layerwise_2000_gs64_refresh_20260922/README.md).
+It replaces 664 complete measurement rows, retains 1,336 old rows and all original
+splits, and records mixed kernel provenance. All 2,000 energy labels are now valid.
+Use its `dataset_snapshot.json` explicitly with the TPOT runner's `--snapshot`;
+default live-registry reads still use old measurements. Historical checkpoints and
+the throughput accuracy results below have **not** been retrained on this refresh.
+
 A reusable prediction package, separate from device measurement code in `scripts/sweep/`.
 
 The isolated [compact-surrogate study](../prediction_research/compact_surrogates/README.md)

@@ -1,0 +1,18 @@
+{
+  "python": "3.10.21",
+  "numpy": "1.23.5",
+  "scipy": "1.15.3",
+  "matplotlib": "3.10.9",
+  "pandas": "2.3.3",
+  "sqlite": "3.53.2",
+  "source_hashes": {
+    "scripts/prediction_research/layerwise_refit/refresh_gs64.py": "5f43b422ae18c450c7969bce4c228f0bcace9c78b840406e5a5a88be7fbd2c4b",
+    "scripts/prediction_research/layerwise_refit/plot_refresh.py": "2f63237263e703b973d8bde110130417aee1f2a2d8bb4929b740ce11a487515e",
+    "scripts/prediction_research/layerwise_refit/test_refresh_gs64.py": "58a4f7eccdbebec2dc21a3464026f1ce37fcc281c71af3b5f4f3b5eb9712634b",
+    "scripts/prediction_research/layerwise_refit/features.py": "699eb662dc9dc3ba64fee8a7654b6a06aa1dbf393ae5e7dacd66dacf335055fe",
+    "scripts/prediction_research/layerwise_refit/data.py": "d541b404b9ea2c2b9dbdd8c8ddee3597facd62ac873d3efdfc476951235b8bb7",
+    "scripts/sweep/layerwise/candidates.py": "daf020779750dcc21a4053103b9c11703a4405f6caae2df9992389f79071e8bc",
+    "scripts/sweep/layerwise/measurement.py": "1322043565786b402227797cc3b7dd4702b2ca438bd9adec54b8cced4a4b7ce8",
+    "scripts/sweep/layerwise/reporting/plot_measurements.py": "25ec5502f868ebfbd7e14f27fa7ddbb5f3ea2d54c2218044436eaccae62d1294"
+  }
+}

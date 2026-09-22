@@ -1,0 +1,27 @@
+{
+  "active_power_w": 0.7327515535816338,
+  "baseline_power_w": 0.054376103925,
+  "baseline_relative_drift": 0.05522202845098384,
+  "decode_gross_energy_per_forward_mj": 95.75635409081723,
+  "decode_tok_s": 8.448199348495963,
+  "duration_s": 6.0167291649850085,
+  "dynamic_energy_per_token_mj": 127.55004227371525,
+  "energy_valid": true,
+  "energy_warning": null,
+  "gross_energy_per_token_mj": 137.7739888475841,
+  "post_baseline_power_w": 0.051373345167,
+  "raw_dynamic_energy_per_token_mj": 127.55004227371525,
+  "timing": {
+    "admission_temperature_c": 36.1,
+    "decode_tokens": 31,
+    "end": 143470.129361207,
+    "idle_start": 143460.108459231,
+    "last_token": 28620,
+    "output_tokens": 32,
+    "post_end": 143474.130171257,
+    "prefill_end": 143466.459940219,
+    "prefill_tokens": 49,
+    "start": 143464.112632042
+  },
+  "ttft_ms": 2347.308177006198
+}

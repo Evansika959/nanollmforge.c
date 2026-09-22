@@ -12,16 +12,45 @@
 > **Releases** page (`reallmforge/fetch_model.sh`) or regenerate them. Then:
 > `make rungelu && ./runq_gelu models/smollm2_135M/smollm2_135M.q8.bin -g models/smollm2_135M/tokenizer_gpt2.bin -i "Once upon a time" -t 0.8 -p 0.9 -n 128`
 
+## Latest predictor delivery — 2026-09-22
+
+The current delivery is **XGBoost predicting TPOT, TTFT, and baseline-subtracted
+dynamic energy**, trained on the GS64-refreshed **2,000 heterogeneous architectures**.
+It uses 110 architecture-only features and fixed grouped splits of
+1,600 training / 200 validation / 200 test architectures.
+
+Mean results across three training seeds on the 200-row test set:
+
+| Target | MAPE ↓ | Spearman ↑ | Recall@32 ↑ |
+|---|---:|---:|---:|
+| TPOT (ms/decode token) | **15.50%** | 0.8426 | 97.92% |
+| TTFT (ms) | **16.52%** | 0.9225 | 93.75% |
+| Dynamic energy (mJ/output token) | **13.97%** | 0.9378 | 62.50% |
+
+Start with the [delivery index and file checklist](diliverable/README.md).
+The [full report and reproduction instructions](diliverable/layerwise_tpot_2000_20260922/README.md)
+and [final checkpoint](diliverable/layerwise_tpot_2000_20260922/models/predictor_final.joblib)
+are the current handoff. The checkpoint is seed 2026, selected using validation only;
+its individual test MAPE is **15.46% / 16.49% / 13.97%** in the same target order.
+
+TPOT excludes prefill and uses 31 decode forwards; energy includes prefill and decode
+and is divided by 32 output tokens. This dataset mixes optimized GS64 measurements
+with retained GS16/32 measurements. No Transformer was retrained for this release.
+Historical throughput-based results below are preserved for reference, not the latest result
+or a directly comparable TPOT baseline.
+
+## Earlier experiments and measurement provenance
+
 > **Hardware prediction and active learning.** Architecture-only predictors and the
 > resumable watch measurement loop live in [`scripts/prediction/`](scripts/prediction/README.md).
 > The curated dataset/model snapshot is in [`diliverable/`](diliverable/README.md)
-> (intentional directory spelling): 2,016 valid observations at the 2026-09-14 export,
+> (intentional directory spelling): the historical homogeneous AL bundle has 2,016 valid observations at the 2026-09-14 export,
 > with separate validation-selected best and latest dynamic-energy checkpoints.
 > Experiment outputs under `scripts/prediction/outputs/` and `scripts/sweep/outputs/`
 > are local, Git-ignored artifacts; `diliverable/` is not ignored. See the
 > [active-learning guide](scripts/prediction/active_learning/README.md) for resume instructions.
 
-> **Layerwise sampling preparation.** The separate [500-candidate registry](scripts/sweep/layerwise/README.md)
+> **Layerwise sampling history.** The separate [500-candidate registry](scripts/sweep/layerwise/README.md)
 > covers the two software-search families with ordered heterogeneous layers and GS16/32/64 strata.
 > The fixed skeleton is confirmed; an explicit resumable runner collects aligned power/timing traces.
 > This is a separate measurement protocol and does not resume or alter the existing active-learning experiment.
@@ -32,6 +61,15 @@
 > preserves databases and raw evidence, uses 1600/200/200 grouped splits, and compares
 > XGBoost with two small Transformers. Its validation-selected final XGBoost checkpoint
 > has test MAPE 25.91% / 22.29% / 11.61% (throughput / TTFT / dynamic energy).
+> A [GS64 decode optimization and separate 664-point replay](doc/gs64_decode_resweep.md)
+> remeasured the original GS64 architectures into `watch5_gs64_decode_v1_664`.
+> The old 2,000-point release and models remain unchanged; new labels are versioned separately.
+> The replay is complete. The [latest combined 2,000-point dataset](diliverable/layerwise_2000_gs64_refresh_20260922/README.md)
+> replaces all 664 GS64 rows, retains 1,336 GS16/32 rows, and includes plots and per-row
+> kernel provenance. All targets are now complete. The [TPOT XGBoost refit](diliverable/layerwise_tpot_2000_20260922/README.md)
+> predicts TPOT (not throughput), TTFT, and dynamic energy: three-seed mean test MAPE
+> **15.50% / 16.52% / 13.97%**, with the same 1600/200/200 splits and 110 architecture features.
+> This is a new target/data version, not a directly comparable throughput-error improvement.
 
 Have you ever wanted to inference a baby [Llama 2](https://ai.meta.com/llama/) model in pure C? No? Well, now you can!
 

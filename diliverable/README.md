@@ -1,11 +1,65 @@
-# Hardware predictor delivery — dynamic energy
+# Hardware predictor delivery
 
-**Separate newer release:** [2,000 layerwise architectures, 2026-09-21](layerwise_2000_20260921/README.md)
+## Current handoff — 2026-09-22
+
+Use the TPOT release below as the **latest reported predictor result**. The older
+throughput and homogeneous active-learning bundles remain historical, separate releases.
+
+**Latest layerwise model:** [TPOT XGBoost, 2026-09-22](layerwise_tpot_2000_20260922/README.md).
+Trained on the GS64-refreshed dataset with 1600/200/200 splits; targets are now
+TPOT (ms/decode token), TTFT, and dynamic energy, all lower-is-better.
+Three-seed mean test MAPE: **15.50% / 16.52% / 13.97%**.
+`layerwise_tpot_2000_20260922/models/predictor_final.joblib` is validation-selected seed 2026
+(individual test MAPE 15.46% / 16.49% / 13.97%). No new Transformer is included.
+
+Reported results are the mean of three seeds on the same 200-row test set, not
+ensemble predictions or the individual final checkpoint's scores:
+
+| Target | MAPE ↓ | Spearman ↑ | Kendall τ-b ↑ | Pairwise accuracy ↑ | Recall@32 ↑ |
+|---|---:|---:|---:|---:|---:|
+| TPOT (ms/decode token) | **15.50%** | 0.8426 | 0.6666 | 83.33% | 97.92% |
+| TTFT (ms) | **16.52%** | 0.9225 | 0.7777 | 88.88% | 93.75% |
+| Dynamic energy (mJ/output token) | **13.97%** | 0.9378 | 0.7919 | 89.59% | 62.50% |
+
+### Delivery file checklist
+
+Paths below are relative to this directory. Deliver both versioned folders **with
+the repository code**; the model bundle alone is not a standalone application.
+
+| Artifact | Location |
+|---|---|
+| Full report, target definitions, caveats, reproduction and inference | [Model README](layerwise_tpot_2000_20260922/README.md) |
+| Final validation-selected checkpoint (seed 2026) | [predictor_final.joblib](layerwise_tpot_2000_20260922/models/predictor_final.joblib) |
+| Frozen 2,000 architecture rows and original splits | [dataset_snapshot.json](layerwise_tpot_2000_20260922/dataset_snapshot.json) |
+| Actual TPOT / TTFT / energy training labels and units | [labels.json](layerwise_tpot_2000_20260922/labels.json) |
+| Per-seed, selected-model and group-size test metrics | [metrics.json](layerwise_tpot_2000_20260922/metrics.json) |
+| Saved test labels and predictions | [test_predictions.npz](layerwise_tpot_2000_20260922/test_predictions.npz) |
+| Validation-only checkpoint selection | [selection.json](layerwise_tpot_2000_20260922/selection.json) |
+| Feature names, versions, dataset and source fingerprints | [manifest.json](layerwise_tpot_2000_20260922/manifest.json) |
+| Training source snapshot | [source_snapshot/](layerwise_tpot_2000_20260922/source_snapshot/) |
+| Label/reload verification and file checksums | [verification.json](layerwise_tpot_2000_20260922/verification.json), [release_hashes.json](layerwise_tpot_2000_20260922/release_hashes.json) |
+| Underlying measurement evidence, GS64 replacement audit and plots | [Data release](layerwise_2000_gs64_refresh_20260922/README.md) |
+
+The model has 110 architecture-only inputs and three independent log-space XGBoost
+regressors. It is fitted on 1,600 rows, with 200 validation and 200 test rows held out;
+it is **not** fitted on all 2,000 rows. TPOT is decode duration / 31; dynamic energy
+includes prefill and decode divided by 32 outputs. All 417 baseline-drift warnings
+remain. The mixed-kernel dataset and reused holdout make this an exploratory result;
+TPOT MAPE must not be treated as directly comparable to historical throughput MAPE.
+
+**Latest layerwise data:** [2,000 points with all 664 GS64 measurements refreshed, 2026-09-22](layerwise_2000_gs64_refresh_20260922/README.md).
+All three targets now have 2,000 valid labels; original 1600/200/200 splits remain.
+That frozen bundle is data-only; the new TPOT model is in the separate release above.
+The 2026-09-21 model/data bundle below remains intact.
+
+## Historical releases — not the current handoff
+
+**Earlier layerwise release:** [2,000 layerwise architectures, 2026-09-21](layerwise_2000_20260921/README.md)
 contains frozen databases/raw evidence, matched XGBoost/Transformer training,
 and a validation-selected final XGBoost checkpoint. It does not replace or mix
 with the older homogeneous AL bundle documented below.
 
-本目录按用户指定的 `diliverable` 命名，保留在 Git ignore 之外。内容是已有数据和 checkpoint 的校验副本，没有重新训练、改写原始实验或启动硬件。
+本目录按用户指定的 `diliverable` 命名，保留在 Git ignore 之外。以下内容仅描述旧的 homogeneous AL 交付包；该旧包是已有数据和 checkpoint 的校验副本，没有重新训练、改写原始实验或启动硬件。最新的 layerwise 重训结果见上方交付入口。
 
 导出快照日期：**2026-09-14**。本说明的轮次和指标对应导出时点，不随后续实验自动更新。模块说明见 [prediction README](../scripts/prediction/README.md)，实际续跑步骤见 [active-learning guide](../scripts/prediction/active_learning/README.md)。
 

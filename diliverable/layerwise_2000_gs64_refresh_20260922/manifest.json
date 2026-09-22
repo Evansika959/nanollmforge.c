@@ -1,0 +1,364 @@
+{
+  "created_utc": "2026-09-22T13:36:19.338895+00:00",
+  "rows": 2000,
+  "replaced": 664,
+  "retained": 1336,
+  "splits": {
+    "test": 200,
+    "train": 1600,
+    "validation": 200
+  },
+  "groups": {
+    "32": 664,
+    "64": 664,
+    "16": 672
+  },
+  "valid_targets": {
+    "decode_tok_s": 2000,
+    "ttft_ms": 2000,
+    "dynamic_energy_per_token_mj": 2000
+  },
+  "warnings": {
+    "None": 1583,
+    "baseline_drift_over_25pct": 417
+  },
+  "replaced_warnings": {
+    "None": 380,
+    "baseline_drift_over_25pct": 284
+  },
+  "dataset_sha256": "482cfbbb9c01570fe8998fd26486660662f3d65bdae6beea79dfc5b2381c37fe",
+  "baseline_dataset_sha256": "e14673856a5f96c9a7d334f488b98dcbb1f0ca737f1e721c54900be6f63a73e4",
+  "statistics": [
+    {
+      "family": "all",
+      "group": null,
+      "n": 2000,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 2000,
+          "median": 9.294834428445018,
+          "p10": 4.926987138819417,
+          "p90": 14.945827838327537
+        },
+        "ttft_ms": {
+          "n": 2000,
+          "median": 1975.5210150033236,
+          "p10": 724.0710100915749,
+          "p90": 5362.13926330056
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 2000,
+          "median": 79.33064628418384,
+          "p10": 49.08671975125056,
+          "p90": 158.32118333364133
+        }
+      }
+    },
+    {
+      "family": "all",
+      "group": 16,
+      "n": 672,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 672,
+          "median": 7.319488190445668,
+          "p10": 4.3548479610588835,
+          "p90": 12.24704999681178
+        },
+        "ttft_ms": {
+          "n": 672,
+          "median": 3419.528826547321,
+          "p10": 1397.8831298998557,
+          "p90": 6388.840919127688
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 672,
+          "median": 90.67508770572604,
+          "p10": 59.97462537163937,
+          "p90": 177.98266642140524
+        }
+      }
+    },
+    {
+      "family": "all",
+      "group": 32,
+      "n": 664,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 664,
+          "median": 8.37636128417531,
+          "p10": 5.06165602525315,
+          "p90": 13.561808500888235
+        },
+        "ttft_ms": {
+          "n": 664,
+          "median": 2279.06671747769,
+          "p10": 968.7227958996118,
+          "p90": 4315.2935659964
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 664,
+          "median": 73.05184406499039,
+          "p10": 51.96890615212526,
+          "p90": 142.57351134192166
+        }
+      }
+    },
+    {
+      "family": "all",
+      "group": 64,
+      "n": 664,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 664,
+          "median": 12.577669670317404,
+          "p10": 8.867805893089926,
+          "p90": 15.586118324819413
+        },
+        "ttft_ms": {
+          "n": 664,
+          "median": 1032.7826039865613,
+          "p10": 647.7588904861477,
+          "p90": 2144.465515311458
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 664,
+          "median": 64.43326054304221,
+          "p10": 44.018114839682625,
+          "p90": 118.00513270427415
+        }
+      }
+    },
+    {
+      "family": "smollm2-135m",
+      "group": null,
+      "n": 1000,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 1000,
+          "median": 12.398054452447933,
+          "p10": 8.089633372248507,
+          "p90": 15.456799410318855
+        },
+        "ttft_ms": {
+          "n": 1000,
+          "median": 1247.851145471941,
+          "p10": 670.7696035911795,
+          "p90": 2226.2196242005302
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 1000,
+          "median": 57.75474742581666,
+          "p10": 43.05518445952613,
+          "p90": 75.20089087001385
+        }
+      }
+    },
+    {
+      "family": "smollm2-135m",
+      "group": 16,
+      "n": 336,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 336,
+          "median": 9.406786511923901,
+          "p10": 6.048788825195978,
+          "p90": 12.83017210686761
+        },
+        "ttft_ms": {
+          "n": 336,
+          "median": 1889.9542695144191,
+          "p10": 1272.2180200071307,
+          "p90": 2941.714165441226
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 336,
+          "median": 69.58219588858029,
+          "p10": 50.435129995504894,
+          "p90": 80.62975756554258
+        }
+      }
+    },
+    {
+      "family": "smollm2-135m",
+      "group": 32,
+      "n": 332,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 332,
+          "median": 10.246477539910009,
+          "p10": 6.670680115650605,
+          "p90": 13.985727560073913
+        },
+        "ttft_ms": {
+          "n": 332,
+          "median": 1333.431874463713,
+          "p10": 879.161306302376,
+          "p90": 2225.964405234484
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 332,
+          "median": 58.15335294565132,
+          "p10": 48.31351018434708,
+          "p90": 69.50753332363138
+        }
+      }
+    },
+    {
+      "family": "smollm2-135m",
+      "group": 64,
+      "n": 332,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 332,
+          "median": 15.074472567356107,
+          "p10": 13.980268671743003,
+          "p90": 16.16553581094141
+        },
+        "ttft_ms": {
+          "n": 332,
+          "median": 712.7814065024722,
+          "p10": 583.88108368963,
+          "p90": 832.6822079776322
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 332,
+          "median": 50.95924029936219,
+          "p10": 38.041951326613805,
+          "p90": 58.82366837064889
+        }
+      }
+    },
+    {
+      "family": "smollm2-360m",
+      "group": null,
+      "n": 1000,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 1000,
+          "median": 7.151898148967559,
+          "p10": 4.217574469471705,
+          "p90": 9.712873168781968
+        },
+        "ttft_ms": {
+          "n": 1000,
+          "median": 3518.1338004949794,
+          "p10": 1849.0816769030062,
+          "p90": 6063.8081281707855
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 1000,
+          "median": 126.8799204579912,
+          "p10": 94.52418962781394,
+          "p90": 173.1628906131748
+        }
+      }
+    },
+    {
+      "family": "smollm2-360m",
+      "group": 16,
+      "n": 336,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 336,
+          "median": 5.116686553546826,
+          "p10": 3.2344755138988734,
+          "p90": 7.434077761262451
+        },
+        "ttft_ms": {
+          "n": 336,
+          "median": 5270.682054986537,
+          "p10": 3701.5191909958958,
+          "p90": 8387.39569997415
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 336,
+          "median": 159.75696138925505,
+          "p10": 129.0977602190565,
+          "p90": 191.80349117992716
+        }
+      }
+    },
+    {
+      "family": "smollm2-360m",
+      "group": 32,
+      "n": 332,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 332,
+          "median": 5.96841094727663,
+          "p10": 3.868253981778705,
+          "p90": 8.541513773296831
+        },
+        "ttft_ms": {
+          "n": 332,
+          "median": 3638.468670000293,
+          "p10": 2432.6867331074027,
+          "p90": 5609.920045291074
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 332,
+          "median": 126.17728585608361,
+          "p10": 91.32238178342011,
+          "p90": 150.5725820538241
+        }
+      }
+    },
+    {
+      "family": "smollm2-360m",
+      "group": 64,
+      "n": 332,
+      "metrics": {
+        "decode_tok_s": {
+          "n": 332,
+          "median": 9.419894746857867,
+          "p10": 8.250001788308179,
+          "p90": 10.14962044383689
+        },
+        "ttft_ms": {
+          "n": 332,
+          "median": 1972.9939835087862,
+          "p10": 1700.5663528951118,
+          "p90": 2422.5978737900737
+        },
+        "dynamic_energy_per_token_mj": {
+          "n": 332,
+          "median": 108.62728861386829,
+          "p10": 87.30233872600786,
+          "p90": 127.123467885805
+        }
+      }
+    }
+  ],
+  "no_retraining": true,
+  "protocol": {
+    "version": "mixed_kernel_layerwise_gs64_refresh_v1",
+    "common_measurement_protocol": {
+      "version": "layerwise_aligned_v1",
+      "hardware_serial": "67301WRDQW80V6",
+      "abi": "armeabi-v7a",
+      "os_build": "google/godric_btwifi/godric_btwifi:17/CP3A.260905.002/15989242:user/release-keys",
+      "wrapper_sha256": "dd112fe91d50b2df106dbbe06a904fbcbe44992cb55acc6a9ed1ed4922e72792",
+      "prompt": "Once upon a time in a sunny meadow near a quiet village, there lived a friendly little girl named Lily. Every afternoon, Lily loved to walk along the stone path to observe the birds singing in the and then they decided to explore further because",
+      "prompt_tokens": 49,
+      "output_tokens": 32,
+      "decode_forwards": 31,
+      "cpu_threads": 4,
+      "cpuset": "f",
+      "energy": "trapezoidal integral over monotonic prefill+decode interval minus pre-idle median times duration, divided by 32",
+      "power_interval_ms": 100,
+      "pre_idle_s": 4,
+      "post_idle_s": 4,
+      "inference_temperature_polling": false,
+      "temperature_admission_lt_c": 45,
+      "battery_stop_le_percent": 30,
+      "synthetic_weights": true
+    },
+    "kernel_by_group": {
+      "16": "16c954879607c83a1bb75538b883368d51bef732e340efe1c46a75c4f52362e6",
+      "32": "16c954879607c83a1bb75538b883368d51bef732e340efe1c46a75c4f52362e6",
+      "64": "1787a8be578e33c76de9c5421fdd3f9bd8a254ca0d2efbdf4ba72dd8f8b8b62e"
+    },
+    "note": "GS16/32 retain historical measurements. Only GS64 was remeasured with the optimized source; not a single-kernel contemporaneous campaign."
+  }
+}

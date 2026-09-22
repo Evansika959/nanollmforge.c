@@ -1,5 +1,15 @@
 # Layerwise hardware sampling: 500-candidate campaign
 
+## GS64 optimized decode replay (new protocol version)
+
+The original 2,000 measurements are complete and frozen. A **separate 664-point
+GS64 replay** now uses an optimized decode GEMV kernel, preserving all original
+data and checkpoints. See [the optimization/replay guide](../../../doc/gs64_decode_resweep.md)
+for validation, paired update files, and start/resume commands. Its directory is
+`outputs/watch5_gs64_decode_v1_664`; use `python -m scripts.sweep.layerwise.gs64_resweep`,
+not the original 500-candidate validator. The historical sections below describe
+the previous kernel; their frozen source guards must not be bypassed.
+
 ## Additional 1,000-point campaign (v3)
 
 `outputs/watch5_layerwise_1000_variable_kv_v3/part1` and `part2` contain
@@ -100,7 +110,9 @@ registry has no performance labels; `status` reports how many have been measured
 On 2026-09-14 the user confirmed the fixed skeleton below and authorized collection.
 The original preparation snapshot/manifest remains unchanged for provenance;
 `confirmation.json` and `hardware_contract.json` record the subsequent execution
-decision. The current kernel is frozen, **without a GS64 optimization**.
+decision. That historical kernel had no specialized GS64 **decode** path;
+its GS64 batched prefill path was already optimized. Its original source is
+preserved in the new replay's `baseline/` directory.
 
 ## Search space and pending confirmation
 
